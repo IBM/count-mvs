@@ -10,9 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     container: registry.access.redhat.com/ubi8/ubi-minimal:8.5-218
     steps:
-      - run: microdnf install python3 make git -y && ln -s /usr/bin/python3.6 /usr/local/bin/python
-      - run: python -m pip install -r requirements-dev.txt
-      # If there are any code differences after beautifying exit with an error code
-      - run: make format && git diff --exit-code
+      - name: Install dependencies
+        run: microdnf install python3 make git -y && ln -s /usr/bin/python3.6 /usr/local/bin/python
+      - name: Clone project into working directory
+        uses: actions/checkout@v1
+      - name: Install project Python dependencies
+        run: python -m pip install -r requirements-dev.txt
+      - name: Format code, fail if there are any differences after beautifying
+        run: make format && git diff --exit-code
       # Linting currently disabled until linting issues are fixed
       # - run: make lint
