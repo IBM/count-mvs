@@ -1,0 +1,18 @@
+name: build
+on:
+  push:
+  pull_request:
+  release:
+    types: [created]
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    container: registry.access.redhat.com/ubi8/ubi-minimal:8.5-218
+    steps:
+      - run: microdnf install python3 make git -y && ln -s /usr/bin/python3.6 /usr/local/bin/python
+      - run: python -m pip install -r requirements-dev.txt
+      # If there are any code differences after beautifying exit with an error code
+      - run: make format && git diff --exit-code
+      # Linting currently disabled until linting issues are fixed
+      # - run: make lint
