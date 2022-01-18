@@ -15,7 +15,7 @@ jobs:
       - name: Clone project into working directory
         uses: actions/checkout@v1
       - name: Install project Python dependencies
-        run: python -m pip install -r requirements-dev.txt
+        run: python -m pip install -r requirements.txt --user
       - name: Format code, fail if there are any differences after beautifying
         run: make format_local && git diff --exit-code
       # Linting currently disabled until linting issues are fixed
