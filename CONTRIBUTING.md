@@ -30,17 +30,8 @@ To make code changes follow the steps outlined here.
 
 Developing this project requires some dependencies:
 
-- [Python 3.6.x](https://www.python.org/downloads/release/python-360/) and pip (Consider using
-[pyenv](https://github.com/pyenv/pyenv) to manage Python versions)
+- [Docker](https://docs.docker.com/get-docker/)
 - Make (installed on most systems by default, for [windows see here](http://gnuwin32.sourceforge.net/packages/make.htm))
-
-Once you have installed the above dependencies, project dependencies can be installed by using pip:
-
-```bash
-pip install -r requirements-dev.txt
-```
-
-The `requirements-dev.txt` file contains the Python packages needed to run this tool.
 
 ### Commands
 
@@ -49,6 +40,9 @@ commands you can use:
 
 * `make format`
 * `make lint`
+
+These use a local Dockerfile to run these commands, this Dockerfile is set up to be as close to a QRadar environment
+as possible (running on Red Hat, using Red Hat Python packages).
 
 ### Code style
 
