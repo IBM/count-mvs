@@ -4,6 +4,7 @@ Copyright 2022 IBM Corporation All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 """
 
+import os
 import csv
 import sys
 import time
@@ -13,6 +14,9 @@ import itertools
 import requests
 import getpass
 import logging
+import time
+
+time.sleep(5)
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
@@ -453,6 +457,8 @@ domainCountMap = {}
 try:
     conn = psycopg2.connect("dbname='qradar' user='qradar'")
 except Exception as e:
+    print(os.getenv('PGHOST'))
+    print(e)
     sys.exit('Unable to connect to the database')
 
 try:
@@ -607,10 +613,10 @@ for i in toRemove:
         format(i))
 
 # Hostnames resolved, duplicates removed, now output count and list file
-with open('mvsCount.csv', 'wb') as output:
+with open('mvsCount.csv', 'w') as output:
     writer = csv.writer(output)
     writer.writerow(deviceMap.keys())
-    writer.writerows(itertools.izip_longest(*deviceMap.values()))
+    writer.writerows(itertools.zip_longest(*deviceMap.values()))
 
 if multidomain:
     mvsCount = multi_domain_count()

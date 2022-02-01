@@ -10,6 +10,14 @@ lint: docker
 format: docker
 	docker run -v $(shell pwd):$(DEV_DIRECTORY) -w $(DEV_DIRECTORY) $(DEV_DOCKER_IMAGE) make format_local
 
+test: unit_tests integration_tests
+
+integration_tests:
+	docker-compose build && docker-compose run qradar
+
+unit_tests:
+	@echo TODO: add unit tests
+
 lint_local:
 	python -m pylint -r n --rcfile=.pylintrc countMVS.py
 
