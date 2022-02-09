@@ -1,18 +1,23 @@
 version: "3.9"
 services:
+  api:
+    build:
+      context: .
+      dockerfile: ./integration/api/Dockerfile
+    command: python /api/api.py
   postgres:
     build:
       context: .
-      dockerfile: ./integration/Postgres.Dockerfile
+      dockerfile: ./integration/db/Dockerfile
     restart: always
-    ports:
-      - 5432:5432
   qradar:
     build:
       context: .
-      dockerfile: ./integration/QRadar.Dockerfile
+      dockerfile: ./integration/env/Dockerfile
     volumes:
       - .:/count-mvs
+      - ./log:/var/log
     depends_on:
       - "postgres"
-    command: python3 /count-mvs/countMVS.py
+      - "api"
+    command: python -m pytest ${INTEGRATION_TESTS:-integration/test/}

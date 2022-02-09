@@ -3,11 +3,13 @@
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.5-218
 
-ENV PGHOST='postgres'
-ENV PGUSER='qradar'
-ENV PGPASSWORD='qradar'
-
-RUN microdnf install python3 python3-psycopg2 python3-requests -y
+RUN microdnf install python3 -y
 RUN ln -s /usr/bin/python3.6 /usr/local/bin/python
 
-RUN mkdir -p /var/log/
+RUN mkdir -p /api
+
+COPY integration/api /api/
+
+RUN python -m pip install -r /api/requirements.txt
+
+WORKDIR /api

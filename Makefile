@@ -13,13 +13,18 @@ format: docker
 test: unit_tests integration_tests
 
 integration_tests:
-	docker-compose build && docker-compose run qradar
+	docker-compose down -v
+	docker-compose build
+	docker-compose run qradar
 
-unit_tests:
-	@echo TODO: add unit tests
+unit_tests: docker
+	docker run -v $(shell pwd):$(DEV_DIRECTORY) -w $(DEV_DIRECTORY) $(DEV_DOCKER_IMAGE) make unit_test_local
 
 lint_local:
 	python -m pylint -r n --rcfile=.pylintrc countMVS.py
 
 format_local:
 	python -m yapf -i -p -r .
+
+unit_test_local:
+	python -m pytest test/

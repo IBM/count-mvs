@@ -16,8 +16,6 @@ import getpass
 import logging
 import time
 
-time.sleep(5)
-
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
                     filename='/var/log/countMVS.log',
@@ -491,7 +489,7 @@ try:
             "Which authentication would you like to use:\n\t1: Admin User\n\t2: Authorized Service\n\n"
             "(q to quit)\n")
         while True:
-            authChoice = raw_input()
+            authChoice = input()
             if authChoice is '1':
                 usePassword = True
                 password = getpass.getpass(
