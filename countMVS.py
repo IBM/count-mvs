@@ -4,7 +4,6 @@ Copyright 2022 IBM Corporation All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 """
 
-import os
 import csv
 import sys
 import time
@@ -455,8 +454,6 @@ domainCountMap = {}
 try:
     conn = psycopg2.connect("dbname='qradar' user='qradar'")
 except Exception as e:
-    print(os.getenv('PGHOST'))
-    print(e)
     sys.exit('Unable to connect to the database')
 
 try:
