@@ -2,6 +2,7 @@ import pytest
 import pexpect
 from util.db import Database
 from util.api import API
+from util.log import print_count_mvs_log
 
 domains = [{
     "id": 0,
@@ -76,24 +77,35 @@ sensor_protocol_config_parameters = [{
     "value": "localhost"
 }]
 
-search_data = {
+search_data = [{
     "events": [{
         "domain_id": 0,
     }]
-}
+}, {
+    "events": [{
+        "domain_id": 1,
+    }]
+}, {
+    "events": [{
+        "domain_id": 2,
+    }]
+}, {
+    "events": [{
+        "domain_id": 3,
+    }]
+}, {
+    "events": [{
+        "domain_id": 4,
+    }]
+}]
 
 
-def test_single_domain():
+def do_setup():
     api = API()
 
-    api.set_search_data(search_data)
+    api.add_search_data(search_data)
 
     db = Database()
-
-    # Clear any leftover artifacts
-    db.cursor()
-    db.reset()
-    db.commit()
 
     # Set up test data
     db.cursor()
@@ -103,7 +115,28 @@ def test_single_domain():
     db.create_sensor_protocol_config_parameters(
         sensor_protocol_config_parameters)
     db.commit()
+    db.close()
 
+
+def do_teardown():
+    api = API()
+    api.reset()
+    db = Database()
+    db.cursor()
+    db.reset()
+    db.commit()
+    db.close()
+    print_count_mvs_log()
+
+
+@pytest.fixture
+def setup():
+    do_setup()
+    yield
+    do_teardown()
+
+
+def test_five_domains(setup):
     process = pexpect.spawn("python countMVS.py")
 
     # Give authentication details
@@ -129,9 +162,3 @@ def test_single_domain():
 
     assert (return_code == 0)
     assert (output[len(output) - 1] == "MVS count for domain Default is 5")
-
-    # Cleanup
-    db.cursor()
-    db.reset()
-    db.commit()
-    db.close()

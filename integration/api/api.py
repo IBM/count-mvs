@@ -2,7 +2,7 @@ from flask import Flask, Response, jsonify, request
 
 app = Flask(__name__)
 
-route_configs = {
+DEFAULT_ROOT_CONFIGS = {
     "start_search": {
         "status_code": 200
     },
@@ -13,12 +13,15 @@ route_configs = {
         "status_code": 200
     }
 }
+DEFAULT_SEARCHES = []
+DEFAULT_SEARCH_DATA = []
 
-searches = []
+route_configs = DEFAULT_ROOT_CONFIGS.copy()
+searches = DEFAULT_SEARCHES.copy()
+search_data = DEFAULT_SEARCH_DATA.copy()
 
-search_data = {}
 
-
+# Configuration endpoints
 @app.route("/conf/route_configs/<endpoint>", methods=["POST"])
 def set_route_config(endpoint):
     global route_configs
@@ -26,13 +29,25 @@ def set_route_config(endpoint):
     return ""
 
 
-@app.route("/conf/search_data", methods=["POST"])
-def set_search_data():
+@app.route("/conf/add_search_data", methods=["POST"])
+def add_search_data():
     global search_data
-    search_data = request.json
+    search_data = search_data + request.json
     return ""
 
 
+@app.route("/conf/reset", methods=["POST"])
+def reset():
+    global route_configs
+    global searches
+    global search_data
+    route_configs = DEFAULT_ROOT_CONFIGS.copy()
+    searches = DEFAULT_SEARCHES.copy()
+    search_data = DEFAULT_SEARCH_DATA.copy()
+    return ""
+
+
+# Mock endpoints
 @app.route("/api/ariel/searches", methods=["POST"])
 def start_search():
     global route_configs
@@ -46,8 +61,10 @@ def start_search():
     for search in searches:
         if search["id"] >= id:
             id = search["id"] + 1
-
-    search = {"id": id, "data": search_data}
+    data = {}
+    if len(search_data) >= 1:
+        data = search_data.pop(0)
+    search = {"id": id, "data": data}
     searches.append(search)
 
     print(searches)
@@ -76,7 +93,6 @@ def get_status(id):
 def get_results(id):
     global route_configs
     global searches
-    global search_data
     conf = route_configs["results"]
     if not conf["status_code"] == 200:
         return Response("Failure!", status=conf["status_code"])

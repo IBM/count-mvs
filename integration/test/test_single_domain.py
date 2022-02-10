@@ -1,6 +1,7 @@
 import pytest
 import pexpect
 from util.db import Database
+from util.log import print_count_mvs_log
 
 domains = [{
     "id": 0,
@@ -27,13 +28,8 @@ sensor_protocol_config_parameters = [{
 }]
 
 
-def test_single_domain():
+def do_setup():
     db = Database()
-
-    # Clear any leftover artifacts
-    db.cursor()
-    db.reset()
-    db.commit()
 
     # Set up test data
     db.cursor()
@@ -44,7 +40,26 @@ def test_single_domain():
     db.create_sensor_protocol_config_parameters(
         sensor_protocol_config_parameters)
     db.commit()
+    db.close()
 
+
+def do_teardown():
+    db = Database()
+    db.cursor()
+    db.reset()
+    db.commit()
+    db.close()
+    print_count_mvs_log()
+
+
+@pytest.fixture
+def setup():
+    do_setup()
+    yield
+    do_teardown()
+
+
+def test_single_domain(setup):
     process = pexpect.spawn("python countMVS.py")
     process.expect(pexpect.EOF, timeout=5)
 
@@ -62,9 +77,3 @@ def test_single_domain():
 
     assert (return_code == 0)
     assert (output[len(output) - 1] == "MVS count for the deployment is 1")
-
-    # Cleanup
-    db.cursor()
-    db.reset()
-    db.commit()
-    db.close()
