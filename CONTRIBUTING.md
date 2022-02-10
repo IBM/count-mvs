@@ -61,30 +61,17 @@ changes, and `make tests` passes without failure.
 You don't need to read this section to develop, this documentation is just here in case a change needs to be made to
 the build pipeline.
 
-#### Linting, formatting, and unit tests
+#### Linting and formatting
 
-Linting, formatting, and unit tests run inside a Docker container defined by [the Dockerfile in the root of this
+Linting and formatting run inside a Docker container defined by [the Dockerfile in the root of this
 project](./Dockerfile). This Dockerfile is set up to be a minimal Red Hat environment using the UBI8 Docker image, this
 is to be as similar to QRadar as possible, so Python dependencies are installed from Red Hat packages (apart from the
-testing/linting/formatting tools which aren't on QRadar).
+dev tools which aren't on QRadar).
 
 For example when `make format` is run it will build the Docker image if it is not already built, then it will
 load the project in as a volume, before running `make format_local` in the Docker container, which will actually
 run the Python formatter.
 
-The unit tests are run using PyTest.
+### Testing
 
-The unit tests for this project are stored in the `/test` directory.
-
-#### Integration tests
-
-Integration tests are run using Docker Compose, this allows for multiple Docker containers to be orchestrated to run
-together. This allows for the integration tests to set up a test PostgreSQL database in a Docker container, a
-mock QRadar API in another container, and a QRadar test environment in another container. This allows the script to
-be run in a simulated QRadar environment, allowing testing without requiring a QRadar system.
-
-When running the integration tests, they are run using PyTest, with this project mounted into the QRadar test
-environment container, with any logs generated mounted from `/log` in the project's root directory.
-
-The integration tests for this project (and any integration dependencies such as Dockerfiles and SQL files) are stored
-in the `/integration` directory.
+See the [testing document](./TESTING.md).
