@@ -1,3 +1,8 @@
+"""
+Copyright 2022 IBM Corporation All Rights Reserved.
+SPDX-License-Identifier: Apache-2.0
+"""
+
 from flask import Flask, Response, jsonify, request
 
 app = Flask(__name__)

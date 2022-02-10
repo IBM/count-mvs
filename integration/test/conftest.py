@@ -1,3 +1,8 @@
+"""
+Copyright 2022 IBM Corporation All Rights Reserved.
+SPDX-License-Identifier: Apache-2.0
+"""
+
 import pytest
 import psycopg2
 import time
