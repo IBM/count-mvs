@@ -149,7 +149,7 @@ def test_five_domains(setup):
     process.sendline("1")
 
     process.expect("Please input the Admin user password:*", timeout=5)
-    process.sendline("qradar.1")
+    process.sendline("test_password")
 
     process.expect(pexpect.EOF, timeout=5)
 
