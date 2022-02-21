@@ -46,7 +46,7 @@ commands you can use:
 * `make unit_tests` - run all of the unit tests
 * `make integration_tests INTEGRATION_TESTS=integration/test/test_single_domain.py` - run a single integration test
 (`integration/test/test_single_domain.py`)
-* `make integration_tests UNIT_TESTS=test/test_example.py` - run a single unit test (`test/test_example.py`)
+* `make unit_tests UNIT_TESTS=test/test_example.py` - run a single unit test (`test/test_example.py`)
 
 These use a local Dockerfile to run these commands, this Dockerfile is set up to be as close to a QRadar environment
 as possible (running on Red Hat, using Red Hat Python packages).
@@ -54,7 +54,7 @@ as possible (running on Red Hat, using Red Hat Python packages).
 ### Code style
 
 Pull requests will be accepted only if `make lint` produces no warnings or errors, `make format` results in no code
-changes, and `make tests` passes without failure.
+changes, and `make test` passes without failure.
 
 ### How does the build pipeline work?
 
