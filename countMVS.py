@@ -13,6 +13,7 @@ import itertools
 import requests
 import getpass
 import logging
+import time
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
@@ -485,7 +486,7 @@ try:
             "Which authentication would you like to use:\n\t1: Admin User\n\t2: Authorized Service\n\n"
             "(q to quit)\n")
         while True:
-            authChoice = raw_input()
+            authChoice = input()
             if authChoice is '1':
                 usePassword = True
                 password = getpass.getpass(
@@ -607,10 +608,10 @@ for i in toRemove:
         format(i))
 
 # Hostnames resolved, duplicates removed, now output count and list file
-with open('mvsCount.csv', 'wb') as output:
+with open('mvsCount.csv', 'w') as output:
     writer = csv.writer(output)
     writer.writerow(deviceMap.keys())
-    writer.writerows(itertools.izip_longest(*deviceMap.values()))
+    writer.writerows(itertools.zip_longest(*deviceMap.values()))
 
 if multidomain:
     mvsCount = multi_domain_count()

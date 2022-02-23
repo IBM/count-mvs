@@ -1,0 +1,23 @@
+version: "3.9"
+services:
+  api:
+    build:
+      context: .
+      dockerfile: ./integration/api/Dockerfile
+    command: python /api/api.py
+  postgres:
+    build:
+      context: .
+      dockerfile: ./integration/db/Dockerfile
+    restart: always
+  qradar:
+    build:
+      context: .
+      dockerfile: ./integration/env/Dockerfile
+    volumes:
+      - .:/count-mvs
+      - ./log:/var/log
+    depends_on:
+      - "postgres"
+      - "api"
+    command: python -m pytest ${INTEGRATION_TESTS:-integration/test/}
