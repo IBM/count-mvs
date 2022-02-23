@@ -8,15 +8,14 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    container: registry.access.redhat.com/ubi8/ubi-minimal:8.5-218
     steps:
-      - name: Install dependencies
-        run: microdnf install python3 python3-psycopg2 python3-requests make git -y && ln -s /usr/bin/python3.6 /usr/local/bin/python
       - name: Clone project into working directory
         uses: actions/checkout@v1
-      - name: Install project Python dependencies
-        run: python -m pip install -r requirements.txt --user
+      - name: Build dev Docker image
+        run: make docker
       - name: Format code, fail if there are any differences after beautifying
-        run: make format_local && git diff --exit-code
+        run: make format && git diff --exit-code
       # Linting currently disabled until linting issues are fixed
       # - run: make lint_local
+      - name: Run tests
+        run: make test
