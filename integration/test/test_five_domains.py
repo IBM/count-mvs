@@ -141,8 +141,8 @@ def setup():
     do_teardown()
 
 
-def test_five_domains(setup):
-    process = pexpect.spawn("python countMVS.py")
+def test_five_domains(setup, pyversion):
+    process = pexpect.spawn(f"python{pyversion} countMVS.py")
 
     # Give authentication details
     process.expect("(q to quit)*", timeout=5)
