@@ -33,5 +33,17 @@ def wait_until_db_ready():
         )
 
 
+def pytest_addoption(parser):
+    parser.addoption("--pyversion",
+                     action="store",
+                     default="3",
+                     help="python version: 2 or 3")
+
+
+@pytest.fixture
+def pyversion(request):
+    return request.config.getoption("--pyversion")
+
+
 def pytest_sessionstart(session):
     wait_until_db_ready()
