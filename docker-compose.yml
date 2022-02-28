@@ -10,7 +10,7 @@ services:
       context: .
       dockerfile: ./integration/db/Dockerfile
     restart: always
-  qradar:
+  py3_integration:
     build:
       context: .
       dockerfile: ./integration/env/Dockerfile
@@ -20,4 +20,15 @@ services:
     depends_on:
       - "postgres"
       - "api"
-    command: python -m pytest ${INTEGRATION_TESTS:-integration/test/}
+    command: python3 -m pytest --pyversion 3 ${INTEGRATION_TESTS:-integration/test/}
+  py2_integration:
+    build:
+      context: .
+      dockerfile: ./integration/env/Dockerfile
+    volumes:
+      - .:/count-mvs
+      - ./log:/var/log
+    depends_on:
+      - "postgres"
+      - "api"
+    command: python -m pytest --pyversion 2 ${INTEGRATION_TESTS:-integration/test/}

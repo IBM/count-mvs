@@ -20,6 +20,9 @@ logging.basicConfig(level=logging.DEBUG,
                     filename='/var/log/countMVS.log',
                     filemode='w')
 
+# Determine the major Python version this script is running with (2/3)
+python_version = sys.version_info[0]
+
 # This is a hard-coded list of log source type IDs that are considered "not MVS"
 # Future versions will be more comprehensive in what to exclude but for now this list is all we need to remove
 mvsExclude = [331, 352, 359, 361, 382, 405]
@@ -486,7 +489,11 @@ try:
             "Which authentication would you like to use:\n\t1: Admin User\n\t2: Authorized Service\n\n"
             "(q to quit)\n")
         while True:
-            authChoice = input()
+            authChoice = None
+            if python_version < 3:
+                authChoice = raw_input()
+            else:
+                authChoice = input()
             if authChoice is '1':
                 usePassword = True
                 password = getpass.getpass(
@@ -611,7 +618,10 @@ for i in toRemove:
 with open('mvsCount.csv', 'w') as output:
     writer = csv.writer(output)
     writer.writerow(deviceMap.keys())
-    writer.writerows(itertools.zip_longest(*deviceMap.values()))
+    if python_version < 3:
+        writer.writerows(itertools.izip_longest(*deviceMap.values()))
+    else:
+        writer.writerows(itertools.zip_longest(*deviceMap.values()))
 
 if multidomain:
     mvsCount = multi_domain_count()
