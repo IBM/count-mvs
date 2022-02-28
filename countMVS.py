@@ -13,12 +13,15 @@ import itertools
 import requests
 import getpass
 import logging
-import time
+import urllib3
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
                     filename='/var/log/countMVS.log',
                     filemode='w')
+
+# Disable insecure HTTPS warnings as most customers do not have certificate validation correctly configured for consoles
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Determine the major Python version this script is running with (2/3)
 python_version = sys.version_info[0]
@@ -217,10 +220,6 @@ def multi_domain_count():
 def get_multiple_domains(conn, ls):
     domains = []
 
-    jsonHeader = {'Accept': 'application/json'}
-    jsonTokenHeader = {'SEC': token, 'Accept': 'application/json'}
-    auth = ('admin', password)
-
     # Call API to start a search for log source's events from the past 24 hours
     searchURL = 'https://{}/api/ariel/searches'.format(consoleIP)
     searchQuery = 'select count(), domainid, logsourceid from events where logsourceid = {} ' \
@@ -237,11 +236,13 @@ def get_multiple_domains(conn, ls):
             searchResponse = requests.post(searchURL,
                                            headers=jsonHeader,
                                            params=searchParams,
-                                           auth=auth)
+                                           auth=auth,
+                                           verify=False)
         elif useToken:
             searchResponse = requests.post(searchURL,
                                            headers=jsonTokenHeader,
-                                           params=searchParams)
+                                           params=searchParams,
+                                           verify=False)
     except Exception as ex:
         logging.debug("Error executing API call {}".format(
             searchResponse.text))
@@ -257,17 +258,7 @@ def get_multiple_domains(conn, ls):
                 ls.sensordeviceid, searchId))
 
     if searchId is "":
-        if searchResponse.status_code == 401:
-            unauthStr = "API call returned 401 Unauthorized."
-            if "locked out" in searchResponse.text:
-                unauthStr += "\nYour host has been locked out due to too many failed login attempts. " \
-                          "Please try again later."
-            elif usePassword:
-                unauthStr += "\nYou have provided the incorrect password. Please rerun the script and try again."
-            elif useToken:
-                unauthStr += "\nYou have provided the incorrect token. Please rerun the script and try again."
-            sys.exit(unauthStr)
-        elif not searchResponse.ok:
+        if not searchResponse.ok:
             errStr = "Error: API returned code {}\n{}".format(
                 searchResponse.staus_code, searchResponse.text)
             sys.exit(errStr)
@@ -292,10 +283,12 @@ def get_multiple_domains(conn, ls):
             if usePassword:
                 statusResponse = requests.get(statusURL,
                                               headers=jsonHeader,
-                                              auth=auth).json()
+                                              auth=auth,
+                                              verify=False).json()
             elif useToken:
                 statusResponse = requests.get(statusURL,
-                                              headers=jsonTokenHeader).json()
+                                              headers=jsonTokenHeader,
+                                              verify=False).json()
 
             logging.debug("Search status is {}".format(
                 statusResponse["status"]))
@@ -307,7 +300,11 @@ def get_multiple_domains(conn, ls):
                 break
 
         except Exception as e:
-            logging.error("Error executing API call {}".format(statusResponse))
+            if statusResponse:
+                logging.error(
+                    "Error executing API call {}".format(statusResponse))
+            else:
+                logging.error("Error executing API call blank statusResponse")
             logging.error(e)
 
         checks += 1
@@ -338,12 +335,14 @@ def get_multiple_domains(conn, ls):
         if usePassword:
             eventsResponse = requests.get(eventsURL,
                                           headers=jsonRangeHeader,
-                                          auth=auth)
+                                          auth=auth,
+                                          verify=False)
             eventsResultList = eventsResponse.json()
             logging.debug("results: {}".format(eventsResponse.text))
         elif useToken:
             eventsResponse = requests.get(eventsURL,
-                                          headers=jsonRangeTokenHeader)
+                                          headers=jsonRangeTokenHeader,
+                                          verify=False)
             eventsResultList = eventsResponse.json()
     except Exception as e:
         logging.error(
@@ -512,6 +511,51 @@ try:
                     "\nInvalid selection. Please choose from the following options:"
                     "\n\t1. Admin User\n\t2. Authorized Service\n\t(q to quit)\n"
                 )
+
+        print("Checking API connectivity")
+
+        jsonHeader = {'Accept': 'application/json'}
+        jsonTokenHeader = {'SEC': token, 'Accept': 'application/json'}
+        auth = ('admin', password)
+
+        # Call API to start a search for log source's events from the past 24 hours
+        checkURL = 'https://{}/api/system/about'.format(consoleIP)
+
+        apiResponse = None
+
+        logging.debug("Attempting to check API with URL: {}".format(checkURL))
+        try:
+            if usePassword:
+                apiResponse = requests.get(checkURL,
+                                           headers=jsonHeader,
+                                           auth=auth,
+                                           verify=False)
+            elif useToken:
+                apiResponse = requests.get(checkURL,
+                                           headers=jsonTokenHeader,
+                                           verify=False)
+            if apiResponse.status_code == 401:
+                unauthStr = "API call returned 401 Unauthorized."
+                if "locked out" in apiResponse.text:
+                    unauthStr += "\nYour host has been locked out due to too many failed login attempts. " \
+                            "Please try again later."
+                elif usePassword:
+                    unauthStr += "\nYou have provided the incorrect password. Please rerun the script and try again."
+                elif useToken:
+                    unauthStr += "\nYou have provided the incorrect token. Please rerun the script and try again."
+                sys.exit(unauthStr)
+        except Exception as ex:
+            if apiResponse.text:
+                logging.debug("Error executing API call {}".format(
+                    apiResponse.text))
+            else:
+                logging.debug(
+                    "Error executing API call empty apiResponse.text")
+            logging.debug(ex)
+            sys.exit("Error connecting to API")
+
+        print("API Connected Successfully")
+
     print("Executing...")
 
     yesterday = int(round(time.time() * 1000)) - 86400000
