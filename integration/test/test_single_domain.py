@@ -64,8 +64,8 @@ def setup():
     do_teardown()
 
 
-def test_single_domain(setup):
-    process = pexpect.spawn("python countMVS.py")
+def test_single_domain(setup, pyversion):
+    process = pexpect.spawn(f"python{pyversion} countMVS.py")
     process.expect(pexpect.EOF, timeout=5)
 
     output = process.before.decode("utf-8").split("\n")
