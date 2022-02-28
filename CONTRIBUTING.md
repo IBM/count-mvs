@@ -44,7 +44,7 @@ commands you can use:
 * `make test` - run all of the tests against the code
 * `make integration_tests` - run all of the integration tests
 * `make py3_integration_tests` - runs the integration tests in Python 3 mode
-* `make py2_integration_tests` - runs the integration tests in Python 3 mode
+* `make py2_integration_tests` - runs the integration tests in Python 2 mode
 * `make unit_tests` - run all of the unit tests
 * `make integration_tests INTEGRATION_TESTS=integration/test/test_single_domain.py` - run a single integration test
 (`integration/test/test_single_domain.py`), this also works for the `py3_integration_tests` and `py2_integration_tests`
