@@ -233,10 +233,10 @@ def get_multiple_domains(conn, ls):
             searchURL))
     try:
         if usePassword:
-            searchResponse = requests.post(searchURL, 
-                                           headers=jsonHeader, 
-                                           params=searchParams, 
-                                           auth=auth, 
+            searchResponse = requests.post(searchURL,
+                                           headers=jsonHeader,
+                                           params=searchParams,
+                                           auth=auth,
                                            verify=False)
         elif useToken:
             searchResponse = requests.post(searchURL,
@@ -282,9 +282,9 @@ def get_multiple_domains(conn, ls):
         try:
             if usePassword:
                 statusResponse = requests.get(statusURL,
-                                             headers=jsonHeader, 
-                                             auth=auth, 
-                                             verify=False).json()
+                                              headers=jsonHeader,
+                                              auth=auth,
+                                              verify=False).json()
             elif useToken:
                 statusResponse = requests.get(statusURL,
                                               headers=jsonTokenHeader,
@@ -301,7 +301,8 @@ def get_multiple_domains(conn, ls):
 
         except Exception as e:
             if statusResponse:
-                logging.error("Error executing API call {}".format(statusResponse))
+                logging.error(
+                    "Error executing API call {}".format(statusResponse))
             else:
                 logging.error("Error executing API call blank statusResponse")
             logging.error(e)
@@ -500,16 +501,17 @@ try:
             elif authChoice is '2':
                 useToken = True
                 token = getpass.getpass(
-                    "Please input the security token for your Authorized Service:\n\n")
+                    "Please input the security token for your Authorized Service:\n\n"
+                )
                 break
             elif str(authChoice) is 'q' or str(authChoice) is 'Q':
                 sys.exit()
             else:
                 print(
                     "\nInvalid selection. Please choose from the following options:"
-                      "\n\t1. Admin User\n\t2. Authorized Service\n\t(q to quit)\n"
+                    "\n\t1. Admin User\n\t2. Authorized Service\n\t(q to quit)\n"
                 )
-    
+
         print("Checking API connectivity")
 
         jsonHeader = {'Accept': 'application/json'}
@@ -524,9 +526,14 @@ try:
         logging.debug("Attempting to check API with URL: {}".format(checkURL))
         try:
             if usePassword:
-                apiResponse = requests.get(checkURL, headers=jsonHeader, auth=auth, verify=False)
+                apiResponse = requests.get(checkURL,
+                                           headers=jsonHeader,
+                                           auth=auth,
+                                           verify=False)
             elif useToken:
-                apiResponse = requests.get(checkURL, headers=jsonTokenHeader, verify=False)
+                apiResponse = requests.get(checkURL,
+                                           headers=jsonTokenHeader,
+                                           verify=False)
             if apiResponse.status_code == 401:
                 unauthStr = "API call returned 401 Unauthorized."
                 if "locked out" in apiResponse.text:
@@ -539,14 +546,15 @@ try:
                 sys.exit(unauthStr)
         except Exception as ex:
             if apiResponse.text:
-                logging.debug("Error executing API call {}".format(apiResponse.text))
+                logging.debug("Error executing API call {}".format(
+                    apiResponse.text))
             else:
-                logging.debug("Error executing API call empty apiResponse.text")
+                logging.debug(
+                    "Error executing API call empty apiResponse.text")
             logging.debug(ex)
             sys.exit("Error connecting to API")
 
         print("API Connected Successfully")
-    
 
     print("Executing...")
 
@@ -571,7 +579,7 @@ try:
         set_domain(conn, device)
 
         # Retrieve identifier for the machine this log source is running on
-        machine = get_machine_identifier(conn, device.spconfig, 
+        machine = get_machine_identifier(conn, device.spconfig,
                                          device.hostname)
 
         # If we can't retrieve a machine ID then skip this device
