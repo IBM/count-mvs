@@ -29,13 +29,13 @@ integration_tests: py3_integration_tests py2_integration_tests
 py3_integration_tests:
 	docker-compose down -v
 	docker-compose build
-	export INTEGRATION_TESTS=$(INTEGRATION_TESTS) && docker-compose up py3_integration --abort-on-container-exit
+	export INTEGRATION_TESTS=$(INTEGRATION_TESTS) && docker-compose up --abort-on-container-exit py3_integration
 	docker-compose down -v
 
 py2_integration_tests:
 	docker-compose down -v
 	docker-compose build
-	export INTEGRATION_TESTS=$(INTEGRATION_TESTS) && docker-compose up py2_integration --abort-on-container-exit
+	export INTEGRATION_TESTS=$(INTEGRATION_TESTS) && docker-compose up --abort-on-container-exit py2_integration
 	docker-compose down -v
 
 unit_tests: docker
