@@ -13,12 +13,15 @@ import itertools
 import requests
 import getpass
 import logging
-import time
+import urllib3
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
                     filename='/var/log/countMVS.log',
                     filemode='w')
+
+# Disable insecure HTTPS warnings as most customers do not have certificate validation correctly configured for consoles
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Determine the major Python version this script is running with (2/3)
 python_version = sys.version_info[0]
@@ -69,7 +72,7 @@ idmap = {
 # TODO mark ls as multi domain? add IP to multi domain IP list?
 class LogSource:
 
-    def __init__(self, sensordeviceid, hostname, devicename, devicetypeid,
+    def __init__(self, sensordeviceid, hostname, devicename, devicetypeid, 
                  spconfig, timestamp_last_seen):
         self.sensordeviceid = sensordeviceid
         self.hostname = hostname
@@ -217,10 +220,6 @@ def multi_domain_count():
 def get_multiple_domains(conn, ls):
     domains = []
 
-    jsonHeader = {'Accept': 'application/json'}
-    jsonTokenHeader = {'SEC': token, 'Accept': 'application/json'}
-    auth = ('admin', password)
-
     # Call API to start a search for log source's events from the past 24 hours
     searchURL = 'https://{}/api/ariel/searches'.format(consoleIP)
     searchQuery = 'select count(), domainid, logsourceid from events where logsourceid = {} ' \
@@ -234,14 +233,16 @@ def get_multiple_domains(conn, ls):
             searchURL))
     try:
         if usePassword:
-            searchResponse = requests.post(searchURL,
-                                           headers=jsonHeader,
-                                           params=searchParams,
-                                           auth=auth)
+            searchResponse = requests.post(searchURL, 
+                                           headers=jsonHeader, 
+                                           params=searchParams, 
+                                           auth=auth, 
+                                           verify=False)
         elif useToken:
             searchResponse = requests.post(searchURL,
                                            headers=jsonTokenHeader,
-                                           params=searchParams)
+                                           params=searchParams,
+                                           verify=False)
     except Exception as ex:
         logging.debug("Error executing API call {}".format(
             searchResponse.text))
@@ -257,17 +258,7 @@ def get_multiple_domains(conn, ls):
                 ls.sensordeviceid, searchId))
 
     if searchId is "":
-        if searchResponse.status_code == 401:
-            unauthStr = "API call returned 401 Unauthorized."
-            if "locked out" in searchResponse.text:
-                unauthStr += "\nYour host has been locked out due to too many failed login attempts. " \
-                          "Please try again later."
-            elif usePassword:
-                unauthStr += "\nYou have provided the incorrect password. Please rerun the script and try again."
-            elif useToken:
-                unauthStr += "\nYou have provided the incorrect token. Please rerun the script and try again."
-            sys.exit(unauthStr)
-        elif not searchResponse.ok:
+        if not searchResponse.ok:
             errStr = "Error: API returned code {}\n{}".format(
                 searchResponse.staus_code, searchResponse.text)
             sys.exit(errStr)
@@ -291,11 +282,13 @@ def get_multiple_domains(conn, ls):
         try:
             if usePassword:
                 statusResponse = requests.get(statusURL,
-                                              headers=jsonHeader,
-                                              auth=auth).json()
+                                             headers=jsonHeader, 
+                                             auth=auth, 
+                                             verify=False).json()
             elif useToken:
                 statusResponse = requests.get(statusURL,
-                                              headers=jsonTokenHeader).json()
+                                              headers=jsonTokenHeader,
+                                              verify=False).json()
 
             logging.debug("Search status is {}".format(
                 statusResponse["status"]))
@@ -307,7 +300,10 @@ def get_multiple_domains(conn, ls):
                 break
 
         except Exception as e:
-            logging.error("Error executing API call {}".format(statusResponse))
+            if statusResponse:
+                logging.error("Error executing API call {}".format(statusResponse))
+            else:
+                logging.error("Error executing API call blank statusResponse")
             logging.error(e)
 
         checks += 1
@@ -323,9 +319,9 @@ def get_multiple_domains(conn, ls):
     jsonRangeHeader = {'Range': 'items=0-49', 'Accept': 'application/json'}
     jsonRangeTokenHeader = {
         'SEC': token,
-        'Range': 'items=0-49',
+        'Range': 'items=0-49', 
         'Accept': 'application/json'
-    }
+        }
 
     eventsURL = 'https://{}/api/ariel/searches/{}/results'.format(
         consoleIP, searchId)
@@ -338,12 +334,14 @@ def get_multiple_domains(conn, ls):
         if usePassword:
             eventsResponse = requests.get(eventsURL,
                                           headers=jsonRangeHeader,
-                                          auth=auth)
+                                          auth=auth,
+                                          verify=False)
             eventsResultList = eventsResponse.json()
             logging.debug("results: {}".format(eventsResponse.text))
         elif useToken:
             eventsResponse = requests.get(eventsURL,
-                                          headers=jsonRangeTokenHeader)
+                                          headers=jsonRangeTokenHeader,
+                                          verify=False)
             eventsResultList = eventsResponse.json()
     except Exception as e:
         logging.error(
@@ -481,13 +479,13 @@ try:
             # log error but continue executing, it's possible we won't need to hit the API
             logging.error(
                 "Unable to retrieve Console IP, we will be unable to make API calls."
-            )
+                )
 
         # Prompt user for password/token in case we need to make API calls
         print(
             "This script may need to call the Ariel API to count the MVS across multiple domains.\n"
-            "Which authentication would you like to use:\n\t1: Admin User\n\t2: Authorized Service\n\n"
-            "(q to quit)\n")
+              "Which authentication would you like to use:\n\t1: Admin User\n\t2: Authorized Service\n\n"
+              "(q to quit)\n")
         while True:
             authChoice = None
             if python_version < 3:
@@ -503,15 +501,54 @@ try:
                 useToken = True
                 token = getpass.getpass(
                     "Please input the security token for your Authorized Service:\n\n"
-                )
+                    )
                 break
             elif str(authChoice) is 'q' or str(authChoice) is 'Q':
                 sys.exit()
             else:
                 print(
                     "\nInvalid selection. Please choose from the following options:"
-                    "\n\t1. Admin User\n\t2. Authorized Service\n\t(q to quit)\n"
-                )
+                      "\n\t1. Admin User\n\t2. Authorized Service\n\t(q to quit)\n"
+                      )
+    
+        print("Checking API connectivity")
+
+        jsonHeader = {'Accept': 'application/json'}
+        jsonTokenHeader = {'SEC': token, 'Accept': 'application/json'}
+        auth = ('admin', password)
+
+        # Call API to start a search for log source's events from the past 24 hours
+        checkURL = 'https://{}/api/system/about'.format(consoleIP)
+
+        apiResponse = None
+
+        logging.debug("Attempting to check API with URL: {}".format(checkURL))
+        try:
+            if usePassword:
+                apiResponse = requests.get(checkURL, headers=jsonHeader, auth=auth, verify=False)
+            elif useToken:
+                apiResponse = requests.get(checkURL, headers=jsonTokenHeader, verify=False)
+            if apiResponse.status_code == 401:
+                unauthStr = "API call returned 401 Unauthorized."
+                if "locked out" in apiResponse.text:
+                    unauthStr += "\nYour host has been locked out due to too many failed login attempts. " \
+                            "Please try again later."
+                elif usePassword:
+                    unauthStr += "\nYou have provided the incorrect password. Please rerun the script and try again."
+                elif useToken:
+                    unauthStr += "\nYou have provided the incorrect token. Please rerun the script and try again."
+                sys.exit(unauthStr)
+        except Exception as ex:
+            if apiResponse.text:
+                logging.debug("Error executing API call {}".format(apiResponse.text))
+            else:
+                logging.debug("Error executing API call empty apiResponse.text")
+            logging.debug(ex)
+            sys.exit("Error connecting to API")
+
+        print("API Connected Successfully")
+    
+
     print("Executing...")
 
     yesterday = int(round(time.time() * 1000)) - 86400000
@@ -535,14 +572,14 @@ try:
         set_domain(conn, device)
 
         # Retrieve identifier for the machine this log source is running on
-        machine = get_machine_identifier(conn, device.spconfig,
-                                         device.hostname)
+        machine = get_machine_identifier(conn, device.spconfig, 
+                                        device.hostname)
 
         # If we can't retrieve a machine ID then skip this device
         if machine is -1:
             logging.error(
                 "Couldn't retrieve machine identifier for sensordevice with id {},"
-                " fall back to using Log Source Identifier".format(row[0]))
+                          " fall back to using Log Source Identifier".format(row[0]))
             machine = device.hostname
 
         # If this log source has multiple domains then keep track of this IP as it will
