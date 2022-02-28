@@ -72,7 +72,7 @@ idmap = {
 # TODO mark ls as multi domain? add IP to multi domain IP list?
 class LogSource:
 
-    def __init__(self, sensordeviceid, hostname, devicename, devicetypeid, 
+    def __init__(self, sensordeviceid, hostname, devicename, devicetypeid,
                  spconfig, timestamp_last_seen):
         self.sensordeviceid = sensordeviceid
         self.hostname = hostname
@@ -319,9 +319,9 @@ def get_multiple_domains(conn, ls):
     jsonRangeHeader = {'Range': 'items=0-49', 'Accept': 'application/json'}
     jsonRangeTokenHeader = {
         'SEC': token,
-        'Range': 'items=0-49', 
+        'Range': 'items=0-49',
         'Accept': 'application/json'
-        }
+    }
 
     eventsURL = 'https://{}/api/ariel/searches/{}/results'.format(
         consoleIP, searchId)
@@ -479,13 +479,13 @@ try:
             # log error but continue executing, it's possible we won't need to hit the API
             logging.error(
                 "Unable to retrieve Console IP, we will be unable to make API calls."
-                )
+            )
 
         # Prompt user for password/token in case we need to make API calls
         print(
             "This script may need to call the Ariel API to count the MVS across multiple domains.\n"
-              "Which authentication would you like to use:\n\t1: Admin User\n\t2: Authorized Service\n\n"
-              "(q to quit)\n")
+            "Which authentication would you like to use:\n\t1: Admin User\n\t2: Authorized Service\n\n"
+            "(q to quit)\n")
         while True:
             authChoice = None
             if python_version < 3:
@@ -500,8 +500,7 @@ try:
             elif authChoice is '2':
                 useToken = True
                 token = getpass.getpass(
-                    "Please input the security token for your Authorized Service:\n\n"
-                    )
+                    "Please input the security token for your Authorized Service:\n\n")
                 break
             elif str(authChoice) is 'q' or str(authChoice) is 'Q':
                 sys.exit()
@@ -509,7 +508,7 @@ try:
                 print(
                     "\nInvalid selection. Please choose from the following options:"
                       "\n\t1. Admin User\n\t2. Authorized Service\n\t(q to quit)\n"
-                      )
+                )
     
         print("Checking API connectivity")
 
@@ -573,13 +572,13 @@ try:
 
         # Retrieve identifier for the machine this log source is running on
         machine = get_machine_identifier(conn, device.spconfig, 
-                                        device.hostname)
+                                         device.hostname)
 
         # If we can't retrieve a machine ID then skip this device
         if machine is -1:
             logging.error(
                 "Couldn't retrieve machine identifier for sensordevice with id {},"
-                          " fall back to using Log Source Identifier".format(row[0]))
+                " fall back to using Log Source Identifier".format(row[0]))
             machine = device.hostname
 
         # If this log source has multiple domains then keep track of this IP as it will
