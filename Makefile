@@ -8,7 +8,7 @@ docker:
 
 lint: docker
 	docker run                           \
-	    --rm                             \
+		--rm                             \
 		-v $(shell pwd):$(DEV_DIRECTORY) \
 		-w $(DEV_DIRECTORY)              \
 		$(DEV_DOCKER_IMAGE)              \
