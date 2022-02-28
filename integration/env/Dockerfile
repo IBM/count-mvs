@@ -7,7 +7,7 @@ ENV PGHOST='postgres'
 ENV PGUSER='qradar'
 ENV PGPASSWORD='qradar'
 
-RUN microdnf install python3 python3-psycopg2 python3-requests -y
+RUN microdnf install python2 python2-psycopg2 python2-requests python3 python3-psycopg2 python3-requests -y
 RUN ln -s /usr/bin/python3.6 /usr/local/bin/python
 
 # Set up dev dependencies
