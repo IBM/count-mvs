@@ -456,8 +456,7 @@ def isConsole():
         else:
             return False
     except Exception as ex:
-        logging.error(
-            "Error determining isConsole")
+        logging.error("Error determining isConsole")
         return True
 
 
