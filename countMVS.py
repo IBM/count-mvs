@@ -459,7 +459,6 @@ def isConsole():
 if not isConsole():
     sys.exit('Running on host that is not console. Exiting.')
 
-
 deviceMap = {}
 lsCount = 0
 multidomain = False
