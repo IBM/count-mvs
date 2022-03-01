@@ -8,6 +8,7 @@ import csv
 import sys
 import time
 import socket
+import subprocess
 import psycopg2
 import itertools
 import requests
@@ -439,6 +440,21 @@ def set_domain(conn, ls):
             ls.sensordeviceid))
         logging.error(e)
         return
+
+
+# This command tells us if we're a console.
+def isConsole():
+        proc = subprocess.Popen(['/opt/qradar/bin/myver', '-c'], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+        (stdout, stderr) = proc.communicate()
+        consoleFlag = str(stdout)
+        if consoleFlag.rstrip() == "true":
+                return True
+        else:
+                return False
+
+
+if not isConsole():
+    sys.exit('Running on host that is not console. Exiting.')
 
 
 deviceMap = {}
