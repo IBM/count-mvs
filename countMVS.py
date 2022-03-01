@@ -444,16 +444,21 @@ def set_domain(conn, ls):
 
 # This command tells us if we're a console.
 def isConsole():
-    proc = subprocess.Popen(['/opt/qradar/bin/myver', '-c'],
-                            stdout=subprocess.PIPE,
-                            stdin=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    (stdout, stderr) = proc.communicate()
-    consoleFlag = str(stdout)
-    if consoleFlag.rstrip() == "true":
+    try:
+        proc = subprocess.Popen(['/opt/qradar/bin/myver', '-c'],
+                                stdout=subprocess.PIPE,
+                                stdin=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        (stdout, stderr) = proc.communicate()
+        consoleFlag = str(stdout)
+        if consoleFlag.rstrip() == "true":
+            return True
+        else:
+            return False
+    except Exception as ex:
+        logging.error(
+            "Error determining isConsole")
         return True
-    else:
-        return False
 
 
 if not isConsole():
