@@ -10,6 +10,7 @@ class Database:
 
     def __init__(self) -> None:
         self.conn = psycopg2.connect("dbname='qradar' user='qradar'")
+        self.cur = None
 
     def cursor(self) -> None:
         self.cur = self.conn.cursor()
