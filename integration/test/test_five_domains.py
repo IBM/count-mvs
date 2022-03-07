@@ -2,6 +2,7 @@
 Copyright 2022 IBM Corporation All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 """
+# pylint: disable=unused-argument,redefined-outer-name
 
 import pytest
 import pexpect
@@ -105,26 +106,26 @@ def do_setup():
 
     api.add_search_data(search_data)
 
-    db = Database()
+    database = Database()
 
     # Set up test data
-    db.cursor()
-    db.create_domains(domains)
-    db.create_sensor_devices(sensor_devices)
-    db.create_sensor_protocol_configs(sensor_protocol_configs)
-    db.create_sensor_protocol_config_parameters(sensor_protocol_config_parameters)
-    db.commit()
-    db.close()
+    database.cursor()
+    database.create_domains(domains)
+    database.create_sensor_devices(sensor_devices)
+    database.create_sensor_protocol_configs(sensor_protocol_configs)
+    database.create_sensor_protocol_config_parameters(sensor_protocol_config_parameters)
+    database.commit()
+    database.close()
 
 
 def do_teardown():
     api = API()
     api.reset()
-    db = Database()
-    db.cursor()
-    db.reset()
-    db.commit()
-    db.close()
+    database = Database()
+    database.cursor()
+    database.reset()
+    database.commit()
+    database.close()
     print_count_mvs_log()
 
 
@@ -159,5 +160,5 @@ def test_five_domains(setup, pyversion):
     # Print stdout/stderr here for debugging in case the test fails
     print(output)
 
-    assert (return_code == 0)
-    assert (output[len(output) - 1] == "MVS count for domain Default is 5")
+    assert return_code == 0
+    assert output[len(output) - 1] == "MVS count for domain Default is 5"
