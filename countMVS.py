@@ -386,9 +386,12 @@ def set_domain(db_conn, log_source):
 
 def is_console():
     try:
-        with subprocess.Popen(['/opt/qradar/bin/myver', '-c'], stdout=subprocess.PIPE) as proc:
-            stdout, _ = proc.communicate()
-            return str(stdout).rstrip() == 'true'
+        # Can't use popen with resource management in Python 2. If this becomes a Python 3-only script
+        # then rewrite using with, and remove the disable rule.
+        # pylint: disable=consider-using-with
+        proc = subprocess.Popen(['/opt/qradar/bin/myver', '-c'], stdout=subprocess.PIPE)
+        stdout, _ = proc.communicate()
+        return str(stdout).rstrip() == 'true'
     except Exception:
         print("Error calling myver -c, assume running on console")
         return True
