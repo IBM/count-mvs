@@ -8,6 +8,7 @@ import csv
 import getpass
 import logging
 import socket
+import subprocess
 import sys
 import time
 import psycopg2
@@ -382,6 +383,19 @@ def set_domain(db_conn, log_source):
         logging.error(domain_error)
         return
 
+
+def is_console():
+    try:
+        with subprocess.Popen(['/opt/qradar/bin/myver', '-c'], stdout=subprocess.PIPE) as proc:
+            stdout, _ = proc.communicate()
+            return str(stdout).rstrip() == 'true'
+    except Exception:
+        print("Error calling myver -c, assume running on console")
+        return True
+
+
+if not is_console():
+    sys.exit('Running on host that is not console. Exiting.')
 
 JSON_HEADER = {'Accept': 'application/json'}
 
