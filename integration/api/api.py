@@ -111,8 +111,4 @@ def get_results(id):
 
 if __name__ == "__main__":
     context = ("server.cert", "server.key")
-    app.run(debug=True,
-            ssl_context=context,
-            host='0.0.0.0',
-            port=443,
-            threaded=False)
+    app.run(debug=True, ssl_context=context, host='0.0.0.0', port=443, threaded=False)

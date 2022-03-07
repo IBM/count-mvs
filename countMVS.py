@@ -70,8 +70,7 @@ SENSOR_PROTOCOL_MAP = {
 class LogSource:
 
     # pylint: disable=too-many-instance-attributes, too-many-arguments
-    def __init__(self, sensordeviceid, hostname, devicename, devicetypeid,
-                 spconfig, timestamp_last_seen):
+    def __init__(self, sensordeviceid, hostname, devicename, devicetypeid, spconfig, timestamp_last_seen):
         self.sensordeviceid = sensordeviceid
         self.hostname = hostname
         self.devicename = devicename
@@ -107,16 +106,16 @@ def get_machine_identifier(db_conn, spconfig, hostname):
         id_cursor.execute(spid_command)
 
         if id_cursor.rowcount > 1:
-            logging.error("Too many rows returned when retrieving spid for id {}, expected only one row."
-                .format(spconfig))
+            logging.error(
+                "Too many rows returned when retrieving spid for id {}, expected only one row.".format(spconfig))
             return -1
         if id_cursor.rowcount == 0:
-            logging.error("No results found for spid with id {}, unable to retrieve machine identifier."
-                .format(spconfig))
+            logging.error(
+                "No results found for spid with id {}, unable to retrieve machine identifier.".format(spconfig))
             return -1
         if id_cursor.rowcount == -1:
-            logging.error("Error trying to retrieve spid for id {}, unable to retrieve machine identifier."
-                .format(spconfig))
+            logging.error(
+                "Error trying to retrieve spid for id {}, unable to retrieve machine identifier.".format(spconfig))
             return -1
 
         spid = id_cursor.fetchone()[0]
@@ -132,16 +131,16 @@ def get_machine_identifier(db_conn, spconfig, hostname):
 
             if id_cursor.rowcount > 1:
                 logging.error(
-                    "Too many rows returned when retrieving machine identifier for id {} and parameter name {}."
-                    .format(spconfig, param_name))
+                    "Too many rows returned when retrieving machine identifier for id {} and parameter name {}.".
+                    format(spconfig, param_name))
                 return -1
             if id_cursor.rowcount == 0:
-                logging.error("No results found for machine identifer with id {} and parameter name {}."
-                    .format(spconfig, param_name))
+                logging.error("No results found for machine identifer with id {} and parameter name {}.".format(
+                    spconfig, param_name))
                 return -1
             if id_cursor.rowcount == -1:
-                logging.error("Error trying to retrieve machine identifier for id {} and parameter name {}."
-                    .format(spconfig, param_name))
+                logging.error("Error trying to retrieve machine identifier for id {} and parameter name {}.".format(
+                    spconfig, param_name))
                 return -1
 
             machine_id = id_cursor.fetchone()[0]
@@ -219,20 +218,16 @@ def get_multiple_domains(db_conn, log_source):
 
     search_response = None
 
-    logging.debug(
-        "Attempting to start event search through API with URL: {}".format(search_url))
+    logging.debug("Attempting to start event search through API with URL: {}".format(search_url))
     try:
         if use_password:
             search_response = requests.post(search_url,
-                                           headers=JSON_HEADER,
-                                           params=search_params,
-                                           auth=auth,
-                                           verify=False)
+                                            headers=JSON_HEADER,
+                                            params=search_params,
+                                            auth=auth,
+                                            verify=False)
         elif use_token:
-            search_response = requests.post(search_url,
-                                           headers=json_token_header,
-                                           params=search_params,
-                                           verify=False)
+            search_response = requests.post(search_url, headers=json_token_header, params=search_params, verify=False)
     except Exception as ex:
         logging.debug("Error executing API call {}".format(search_response.text))
         logging.debug(ex)
@@ -247,11 +242,10 @@ def get_multiple_domains(db_conn, log_source):
 
     if not search_id:
         if not search_response.ok:
-            sys.exit("Error: API returned code {}\n{}".format(
-                search_response.staus_code, search_response.text))
+            sys.exit("Error: API returned code {}\n{}".format(search_response.staus_code, search_response.text))
 
         logging.error("Unable to start a search for log source {}'s events, unable to retrieve "
-            "domains for this log source".format(log_source.sensordeviceid))
+                      "domains for this log source".format(log_source.sensordeviceid))
         return []
 
     # We have successfully started a search for the log source's events, poll search_id until search is complete
@@ -266,19 +260,13 @@ def get_multiple_domains(db_conn, log_source):
 
         try:
             if use_password:
-                status_response = requests.get(status_url,
-                                              headers=JSON_HEADER,
-                                              auth=auth,
-                                              verify=False).json()
+                status_response = requests.get(status_url, headers=JSON_HEADER, auth=auth, verify=False).json()
             elif use_token:
-                status_response = requests.get(status_url,
-                                              headers=json_token_header,
-                                              verify=False).json()
+                status_response = requests.get(status_url, headers=json_token_header, verify=False).json()
 
             logging.debug("Search status is {}".format(status_response["status"]))
             if status_response["status"] == "COMPLETED":
-                logging.debug("Event search is complete for log source {}".format(
-                    log_source.sensordeviceid))
+                logging.debug("Event search is complete for log source {}".format(log_source.sensordeviceid))
                 search_complete = True
                 break
 
@@ -294,16 +282,12 @@ def get_multiple_domains(db_conn, log_source):
 
     if not search_complete:
         logging.error("Event search for log source {} took over 60 seconds to complete, unable to retrieve"
-            "domains for this log source".format(log_source.sensordeviceid))
+                      "domains for this log source".format(log_source.sensordeviceid))
         return []
 
     # Search is complete, iterate through results to build list of domains
     json_range_header = {'Range': 'items=0-49', 'Accept': 'application/json'}
-    json_range_token_header = {
-        'SEC': token,
-        'Range': 'items=0-49',
-        'Accept': 'application/json'
-    }
+    json_range_token_header = {'SEC': token, 'Range': 'items=0-49', 'Accept': 'application/json'}
 
     events_url = 'https://{}/api/ariel/searches/{}/results'.format(console_ip, search_id)
 
@@ -313,20 +297,14 @@ def get_multiple_domains(db_conn, log_source):
     logging.debug("Check search results with URL {}".format(events_url))
     try:
         if use_password:
-            events_response = requests.get(events_url,
-                                          headers=json_range_header,
-                                          auth=auth,
-                                          verify=False)
+            events_response = requests.get(events_url, headers=json_range_header, auth=auth, verify=False)
             events_result_list = events_response.json()
             logging.debug("results: {}".format(events_response.text))
         elif use_token:
-            events_response = requests.get(events_url,
-                                          headers=json_range_token_header,
-                                          verify=False)
+            events_response = requests.get(events_url, headers=json_range_token_header, verify=False)
             events_result_list = events_response.json()
     except Exception as events_error:
-        logging.error("Error retrieving results for events search for log source {}"
-                      .format(log_source.sensordeviceid))
+        logging.error("Error retrieving results for events search for log source {}".format(log_source.sensordeviceid))
         logging.error(events_error)
         return []
 
@@ -335,8 +313,8 @@ def get_multiple_domains(db_conn, log_source):
         logging.error("Couldn't retrieve domains for log source {}".format(log_source.sensordeviceid))
         return []
 
-    logging.debug("API call was successful to retrieve event search results for log source {}"
-        .format(log_source.sensordeviceid))
+    logging.debug("API call was successful to retrieve event search results for log source {}".format(
+        log_source.sensordeviceid))
     for json_data in events_result_list["events"]:
         if "domainid" in json_data:
             domain_id = json_data["domainid"]
@@ -376,8 +354,7 @@ def set_domain(db_conn, log_source):
         domain_cursor.execute(domain_command)
 
         if domain_cursor.rowcount == -1:
-            logging.error(
-                "Error trying to retrieve domain for log source {}.".format(log_source.sensordeviceid))
+            logging.error("Error trying to retrieve domain for log source {}.".format(log_source.sensordeviceid))
             return
         if domain_cursor.rowcount == 0:
             if multidomain:
@@ -404,6 +381,7 @@ def set_domain(db_conn, log_source):
         logging.error('Error retrieving domain for log source {}'.format(log_source.sensordeviceid))
         logging.error(domain_error)
         return
+
 
 JSON_HEADER = {'Accept': 'application/json'}
 
@@ -455,10 +433,9 @@ try:
             logging.error("Unable to retrieve Console IP, we will be unable to make API calls.")
 
         # Prompt user for password/token in case we need to make API calls
-        print(
-            "This script may need to call the Ariel API to count the MVS across multiple domains.\n"
-            "Which authentication would you like to use:\n\t1: Admin User\n\t2: Authorized Service\n\n"
-            "(q to quit)\n")
+        print("This script may need to call the Ariel API to count the MVS across multiple domains.\n"
+              "Which authentication would you like to use:\n\t1: Admin User\n\t2: Authorized Service\n\n"
+              "(q to quit)\n")
         while True:
             auth_choice = str(six.moves.input())  # pylint: disable=invalid-name
             if auth_choice == '1':
@@ -486,14 +463,9 @@ try:
         logging.debug("Attempting to check API with URL: {}".format(check_url))
         try:
             if use_password:
-                api_response = requests.get(check_url,
-                                           headers=JSON_HEADER,
-                                           auth=auth,
-                                           verify=False)
+                api_response = requests.get(check_url, headers=JSON_HEADER, auth=auth, verify=False)
             elif use_token:
-                api_response = requests.get(check_url,
-                                           headers=json_token_header,
-                                           verify=False)
+                api_response = requests.get(check_url, headers=json_token_header, verify=False)
             if api_response.status_code == 401:
                 unauth_msg = "API call returned 401 Unauthorized."  # pylint: disable=invalid-name
                 if "locked out" in api_response.text:
@@ -519,9 +491,8 @@ try:
     yesterday = int(round(time.time() * 1000)) - 86400000
     logging.debug("Timestamp for 24 hours ago is {}".format(yesterday))
 
-    db_cursor.execute(
-        "select id, hostname, devicename, devicetypeid, spconfig, timestamp_last_seen from sensordevice"
-        " where timestamp_last_seen > {} and spconfig is not null;".format(yesterday))
+    db_cursor.execute("select id, hostname, devicename, devicetypeid, spconfig, timestamp_last_seen from sensordevice"
+                      " where timestamp_last_seen > {} and spconfig is not null;".format(yesterday))
 
     for row in db_cursor.fetchall():
         log_source_count += 1
@@ -540,9 +511,8 @@ try:
 
         # If we can't retrieve a machine ID then skip this device
         if machine == -1:
-            logging.error(
-                "Couldn't retrieve machine identifier for sensordevice with id {},"
-                " fall back to using Log Source Identifier".format(row[0]))
+            logging.error("Couldn't retrieve machine identifier for sensordevice with id {},"
+                          " fall back to using Log Source Identifier".format(row[0]))
             machine = device.hostname
 
         # If this log source has multiple domains then keep track of this IP as it will
@@ -553,9 +523,8 @@ try:
         if machine in device_map:
             # If machine is already listed, then append this device to its LS list
             device_map[machine].append(device)
-            logging.debug(
-                "Machine {} in the map, adding device with id {} to its list".format(
-                    machine, device.sensordeviceid))
+            logging.debug("Machine {} in the map, adding device with id {} to its list".format(
+                machine, device.sensordeviceid))
         else:
             # If machine is not listed then add it to the map
             device_map[machine] = [device]
@@ -587,8 +556,7 @@ for mc_id, log_sources in device_map.items():
         if ip in device_map:
             # If this IP is already in the map then consolidate lists
             device_map[ip].extend(log_sources)
-            logging.debug(
-                "IP {} is in the map, consolidating lists".format(ip))
+            logging.debug("IP {} is in the map, consolidating lists".format(ip))
         else:
             # If this IP is not already in the map then add it
             to_add[ip] = log_sources
