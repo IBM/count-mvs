@@ -75,12 +75,7 @@ sensor_protocol_configs = [{
     "spid": 4
 }]
 
-sensor_protocol_config_parameters = [{
-    "id": 0,
-    "sensorprotocolconfigid": 0,
-    "name": "server",
-    "value": "localhost"
-}]
+sensor_protocol_config_parameters = [{"id": 0, "sensorprotocolconfigid": 0, "name": "server", "value": "localhost"}]
 
 search_data = [{
     "events": [{
@@ -117,8 +112,7 @@ def do_setup():
     db.create_domains(domains)
     db.create_sensor_devices(sensor_devices)
     db.create_sensor_protocol_configs(sensor_protocol_configs)
-    db.create_sensor_protocol_config_parameters(
-        sensor_protocol_config_parameters)
+    db.create_sensor_protocol_config_parameters(sensor_protocol_config_parameters)
     db.commit()
     db.close()
 
