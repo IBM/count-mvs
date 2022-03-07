@@ -29,15 +29,11 @@ def wait_until_db_ready():
             time.sleep(POSTGRES_WAIT_INTERVAL)
     if not db_ready:
         raise Exception(
-            f"PostgreSQL DB not ready after waiting for {POSTGRES_RETRIES * POSTGRES_WAIT_INTERVAL} seconds"
-        )
+            f"PostgreSQL DB not ready after waiting for {POSTGRES_RETRIES * POSTGRES_WAIT_INTERVAL} seconds")
 
 
 def pytest_addoption(parser):
-    parser.addoption("--pyversion",
-                     action="store",
-                     default="3",
-                     help="python version: 2 or 3")
+    parser.addoption("--pyversion", action="store", default="3", help="python version: 2 or 3")
 
 
 @pytest.fixture
