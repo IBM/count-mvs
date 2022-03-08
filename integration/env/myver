@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# This dummy script currently supports the call to myver -c.
+# In the future it could be expanded to support more options.
+
+echo 'true'
