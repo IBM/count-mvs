@@ -387,14 +387,14 @@ def set_domain(db_conn, log_source):
 def is_console():
     try:
         # Can't use popen with resource management in Python 2. If this becomes a Python 3-only script
-        # then rewrite using with, and remove the disable rule.
+        # then rewrite using with, and remove the disable rule. 
+        # Also, for Python 3, using subprocess.run instead of subprocess.Popen is recommended.
         # pylint: disable=consider-using-with
         proc = subprocess.Popen(['/opt/qradar/bin/myver', '-c'], stdout=subprocess.PIPE)
         stdout, _ = proc.communicate()
-        return str(stdout).rstrip() == 'true'
+        return stdout.decode('utf-8').rstrip() == 'true'
     except Exception:
-        print("Error calling myver -c, assume running on console")
-        return True
+        sys.exit("Unable to determine if host is the console. Exiting.")
 
 
 if not is_console():
@@ -502,8 +502,6 @@ try:
             sys.exit("Error connecting to API")
 
         print("API Connected Successfully")
-
-    print("Executing...")
 
     yesterday = int(round(time.time() * 1000)) - 86400000
     logging.debug("Timestamp for 24 hours ago is {}".format(yesterday))
