@@ -17,8 +17,10 @@ COPY requirements.txt /
 RUN python -m pip install -r /requirements.txt --user
 
 # Set up QRadar environment
-RUN mkdir -p /var/log/ && mkdir -p /opt/qradar/conf
+RUN mkdir -p /var/log/ && mkdir -p /opt/qradar/conf && mkdir -p /opt/qradar/bin
 COPY integration/env/nva.hostcontext.conf /opt/qradar/conf/nva.hostcontext.conf
+COPY integration/env/myver /opt/qradar/bin
+RUN chmod +x /opt/qradar/bin/myver
 
 # Trust API cert
 COPY integration/api/server.cert /etc/pki/ca-trust/source/anchors/api.cert

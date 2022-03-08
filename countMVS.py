@@ -387,7 +387,7 @@ def set_domain(db_conn, log_source):
 def is_console():
     try:
         # Can't use popen with resource management in Python 2. If this becomes a Python 3-only script
-        # then rewrite using with, and remove the disable rule. 
+        # then rewrite using with, and remove the disable rule.
         # Also, for Python 3, using subprocess.run instead of subprocess.Popen is recommended.
         # pylint: disable=consider-using-with
         proc = subprocess.Popen(['/opt/qradar/bin/myver', '-c'], stdout=subprocess.PIPE)
