@@ -9,18 +9,25 @@ import pexpect
 from util.db import Database
 from util.log import print_count_mvs_log
 
-domains = [{
-    "id": 0,
-    "name": "test",
-}]
+domains = [
+    {"id": 0, "name": "test"},
+]
 
-sensor_devices = [{"id": 0, "hostname": "localhost", "devicename": "test", "devicetypeid": 0, "spconfig": 0}]
+sensor_devices = [
+    {"id": 0, "hostname": "localhost", "devicename": "test", "devicetypeid": 0, "spconfig": 0},
+]
 
-domain_mappings = [{"id": 0, "domain_id": 0, "source_type": 2, "source_id": 0}]
+domain_mappings = [
+    {"id": 0, "domain_id": 0, "source_type": 2, "source_id": 0},
+]
 
-sensor_protocol_configs = [{"id": 0, "spid": 0}]
+sensor_protocol_configs = [
+    {"id": 0, "spid": 0},
+]
 
-sensor_protocol_config_parameters = [{"id": 0, "sensorprotocolconfigid": 0, "name": "server", "value": "localhost"}]
+sensor_protocol_config_parameters = [
+    {"id": 0, "sensorprotocolconfigid": 0, "name": "server", "value": "localhost"},
+]
 
 
 def do_setup():

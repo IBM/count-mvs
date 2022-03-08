@@ -63,7 +63,7 @@ SENSOR_PROTOCOL_MAP = {
     83: "endpointURL",
     84: "hostname",
     87: "loginEndPoint",
-    90: "authorizationEndPoint"
+    90: "authorizationEndPoint",
 }
 
 
