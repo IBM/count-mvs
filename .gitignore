@@ -1,4 +1,6 @@
 .python-version
+.project
+.pydevproject
 mvsCount.csv
 log/
 __pycache__/

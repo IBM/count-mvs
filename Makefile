@@ -47,7 +47,11 @@ unit_tests: docker
 		make unit_test_local UNIT_TESTS=$(UNIT_TESTS)
 
 lint_local:
-	python -m pylint -r n --rcfile=.pylintrc countMVS.py
+	python -m pylint -r n --rcfile=.pylintrc countMVS.py \
+	test/*.py \
+	integration/api/*.py \
+	integration/test/*.py \
+	integration/test/util/*.py
 
 format_local:
 	python -m yapf -i -p -r .
