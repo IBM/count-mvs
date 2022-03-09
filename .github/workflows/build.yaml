@@ -15,7 +15,7 @@ jobs:
         run: make docker
       - name: Format code, fail if there are any differences after beautifying
         run: make format && git diff --exit-code
-      # Linting currently disabled until linting issues are fixed
-      # - run: make lint_local
+      - name: Run pylint against code
+        run: make lint
       - name: Run tests
         run: make test
