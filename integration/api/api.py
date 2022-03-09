@@ -2,21 +2,16 @@
 Copyright 2022 IBM Corporation All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 """
+# pylint: disable=global-statement,global-variable-not-assigned,invalid-name
 
 from flask import Flask, Response, jsonify, request
 
 app = Flask(__name__)
 
 DEFAULT_ROOT_CONFIGS = {
-    "start_search": {
-        "status_code": 200
-    },
-    "results": {
-        "status_code": 200
-    },
-    "status": {
-        "status_code": 200
-    }
+    "start_search": {"status_code": 200},
+    "results": {"status_code": 200},
+    "status": {"status_code": 200},
 }
 DEFAULT_SEARCHES = []
 DEFAULT_SEARCH_DATA = []
@@ -62,23 +57,23 @@ def start_search():
     if not conf["status_code"] == 200:
         return Response("Failure!", status=conf["status_code"])
 
-    id = 0
+    search_id = 0
     for search in searches:
-        if search["id"] >= id:
-            id = search["id"] + 1
+        if search["id"] >= search_id:
+            search_id = search["id"] + 1
     data = {}
     if len(search_data) >= 1:
         data = search_data.pop(0)
-    search = {"id": id, "data": data}
+    search = {"id": search_id, "data": data}
     searches.append(search)
 
     print(searches)
 
-    return jsonify({"search_id": id})
+    return jsonify({"search_id": search_id})
 
 
-@app.route("/api/ariel/searches/<int:id>", methods=["GET"])
-def get_status(id):
+@app.route("/api/ariel/searches/<int:search_id>", methods=["GET"])
+def get_status(search_id):
     global route_configs
     global searches
     conf = route_configs["status"]
@@ -88,14 +83,14 @@ def get_status(id):
     print(searches)
 
     for search in searches:
-        if search["id"] == id:
+        if search["id"] == search_id:
             return jsonify({"status": "COMPLETED"})
 
-    return Response(f"No search found with id {id}", status=404)
+    return Response(f"No search found with id {search_id}", status=404)
 
 
-@app.route("/api/ariel/searches/<int:id>/results", methods=["GET"])
-def get_results(id):
+@app.route("/api/ariel/searches/<int:search_id>/results", methods=["GET"])
+def get_results(search_id):
     global route_configs
     global searches
     conf = route_configs["results"]
@@ -103,16 +98,12 @@ def get_results(id):
         return Response("Failure!", status=conf["status_code"])
 
     for search in searches:
-        if search["id"] == id:
+        if search["id"] == search_id:
             return jsonify(search["data"])
 
-    return Response(f"No search found with id {id}", status=404)
+    return Response(f"No search found with id {search_id}", status=404)
 
 
 if __name__ == "__main__":
     context = ("server.cert", "server.key")
-    app.run(debug=True,
-            ssl_context=context,
-            host='0.0.0.0',
-            port=443,
-            threaded=False)
+    app.run(debug=True, ssl_context=context, host='0.0.0.0', port=443, threaded=False)
