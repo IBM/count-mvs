@@ -9,9 +9,7 @@ from flask import Flask, Response, jsonify, request
 app = Flask(__name__)
 
 DEFAULT_ROOT_CONFIGS = {
-    "start_search": {"status_code": 200},
-    "results": {"status_code": 200},
-    "status": {"status_code": 200},
+    "start_search": {"status_code": 200}, "results": {"status_code": 200}, "status": {"status_code": 200},
     "about": {"status_code": 200}
 }
 DEFAULT_SEARCHES = []
