@@ -252,9 +252,9 @@ def get_multiple_domains(db_conn, log_source):
                 unauth_str += "\nYour host has been locked out due to too many failed login attempts. " \
                     "Please try again later."
             elif use_password:
-                unauth_str += "\nYou have provided the incorrect password. Please rerun the script and try again."
+                unauth_str += "\nYou have provided an incorrect password. Please rerun the script and try again."
             elif use_token:
-                unauth_str += "\nYou have provided the incorrect token. Please rerun the script and try again."
+                unauth_str += "\nYou have provided an incorrect token. Please rerun the script and try again."
             sys.exit(unauth_str)
         elif api_response.status_code == 403 and use_token:
             sys.exit("API call returned 403 Forbidden. \nThe token provided has incorrect permissions. " \
@@ -516,10 +516,10 @@ try:
                         unauth_msg += "\nYour host has been locked out due to too many failed login attempts. " \
                             "Please try again later."
                     elif use_password:
-                        unauth_msg += "\nYou have provided the incorrect password. " \
+                        unauth_msg += "\nYou have provided an incorrect password. " \
                             "Please rerun the script and try again."
                     elif use_token:
-                        unauth_msg += "\nYou have provided the incorrect token. Please rerun the script and try again."
+                        unauth_msg += "\nYou have provided an incorrect token. Please rerun the script and try again."
                     sys.exit(unauth_msg)
                 elif api_response.status_code == 403 and use_token:
                     sys.exit("API call returned 403 Forbidden. \nThe token provided has incorrect permissions. " \
