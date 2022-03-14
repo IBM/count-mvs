@@ -208,7 +208,8 @@ def multi_domain_count():
 
 
 def get_multiple_domains(db_conn, log_source):
-    # pylint: disable=too-many-locals,too-many-branches,too-many-statements
+    # pylint: disable=too-many-locals,too-many-branches,too-many-statements,too-many-return-statements
+    # could be refactored in the future to minimise return statements
     domains = []
 
     # Call API to start a search for log source's events from the past 24 hours
@@ -230,21 +231,38 @@ def get_multiple_domains(db_conn, log_source):
         elif use_token:
             search_response = requests.post(search_url, headers=json_token_header, params=search_params, verify=False)
     except Exception as ex:
-        logging.debug("Error executing API call {}".format(search_response.text))
+        if search_response.text:
+            logging.debug("Error executing API call {}".format(search_response.text))
+        else:
+            logging.debug("Error executing API call empty search response text")
         logging.debug(ex)
         return []
 
     search_id = None
 
-    if "search_id" in search_response.json():
-        search_id = search_response.json()["search_id"]
-        logging.debug("Initiated event search for log source {}, search id is {}".format(
-            log_source.sensordeviceid, search_id))
+    if search_response.ok:
+        if "search_id" in search_response.json():
+            search_id = search_response.json()["search_id"]
+            logging.debug("Initiated event search for log source {}, search id is {}".format(
+                log_source.sensordeviceid, search_id))
+    else:
+        if search_response.status_code == 401:
+            unauth_str = "API call returned 401 Unauthorized."
+            if "locked out" in search_response.text:
+                unauth_str += "\nYour host has been locked out due to too many failed login attempts. " \
+                    "Please try again later."
+            elif use_password:
+                unauth_str += "\nYou have provided the incorrect password. Please rerun the script and try again."
+            elif use_token:
+                unauth_str += "\nYou have provided the incorrect token. Please rerun the script and try again."
+            sys.exit(unauth_str)
+        elif api_response.status_code == 403 and use_token:
+            sys.exit("API call returned 403 Forbidden. \nThe token provided has incorrect permissions. " \
+                        "Please rerun the script and try again")
+        else:
+            logging.error("Error: API returned code {}\n{}".format(search_response.status_code, search_response.text))
 
-    if not search_id:
-        if not search_response.ok:
-            sys.exit("Error: API returned code {}\n{}".format(search_response.staus_code, search_response.text))
-
+    if search_id is None:
         logging.error("Unable to start a search for log source {}'s events, unable to retrieve "
                       "domains for this log source".format(log_source.sensordeviceid))
         return []
@@ -261,22 +279,29 @@ def get_multiple_domains(db_conn, log_source):
 
         try:
             if use_password:
-                status_response = requests.get(status_url, headers=JSON_HEADER, auth=auth, verify=False).json()
+                status_response = requests.get(status_url, headers=JSON_HEADER, auth=auth, verify=False)
             elif use_token:
-                status_response = requests.get(status_url, headers=json_token_header, verify=False).json()
+                status_response = requests.get(status_url, headers=json_token_header, verify=False)
 
-            logging.debug("Search status is {}".format(status_response["status"]))
-            if status_response["status"] == "COMPLETED":
-                logging.debug("Event search is complete for log source {}".format(log_source.sensordeviceid))
-                search_complete = True
-                break
+            if status_response.ok:
+                status_json = status_response.json()
+                logging.debug("Search status is {}".format(status_json["status"]))
+                if status_json["status"] == "COMPLETED":
+                    logging.debug("Event search is complete for log source {}".format(log_source.sensordeviceid))
+                    search_complete = True
+                    break
+            else:
+                logging.error("Error executing API call {}".format(status_response.text))
+                logging.error("Unable to retrieve domains for this log source")
+                return []
 
         except Exception as status_error:
-            if status_response:
-                logging.error("Error executing API call {}".format(status_response))
+            if status_response.text:
+                logging.error("Error executing API call {}".format(status_response.text))
             else:
                 logging.error("Error executing API call blank status_response")
             logging.error(status_error)
+            return []
 
         checks += 1
         time.sleep(1)
@@ -483,16 +508,28 @@ try:
                 api_response = requests.get(check_url, headers=JSON_HEADER, auth=auth, verify=False)
             elif use_token:
                 api_response = requests.get(check_url, headers=json_token_header, verify=False)
-            if api_response.status_code == 401:
-                unauth_msg = "API call returned 401 Unauthorized."  # pylint: disable=invalid-name
-                if "locked out" in api_response.text:
-                    unauth_msg += "\nYour host has been locked out due to too many failed login attempts. " \
-                        "Please try again later."
-                elif use_password:
-                    unauth_msg += "\nYou have provided the incorrect password. Please rerun the script and try again."
-                elif use_token:
-                    unauth_msg += "\nYou have provided the incorrect token. Please rerun the script and try again."
-                sys.exit(unauth_msg)
+
+            if not api_response.ok:
+                if api_response.status_code == 401:
+                    unauth_msg = "API call returned 401 Unauthorized."  # pylint: disable=invalid-name
+                    if "locked out" in api_response.text:
+                        unauth_msg += "\nYour host has been locked out due to too many failed login attempts. " \
+                            "Please try again later."
+                    elif use_password:
+                        unauth_msg += "\nYou have provided the incorrect password. " \
+                            "Please rerun the script and try again."
+                    elif use_token:
+                        unauth_msg += "\nYou have provided the incorrect token. Please rerun the script and try again."
+                    sys.exit(unauth_msg)
+                elif api_response.status_code == 403 and use_token:
+                    sys.exit("API call returned 403 Forbidden. \nThe token provided has incorrect permissions. " \
+                        "Please rerun the script and try again")
+                else:
+                    if api_response.text:
+                        logging.debug("Error executing API call {}".format(api_response.text))
+                    else:
+                        logging.debug("Error executing API call empty api_response.text")
+                    sys.exit("Error connecting to API")
         except Exception as api_error:
             if api_response.text:
                 logging.debug("Error executing API call {}".format(api_response.text))

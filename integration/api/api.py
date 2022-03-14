@@ -12,6 +12,7 @@ DEFAULT_ROOT_CONFIGS = {
     "start_search": {"status_code": 200},
     "results": {"status_code": 200},
     "status": {"status_code": 200},
+    "about": {"status_code": 200}
 }
 DEFAULT_SEARCHES = []
 DEFAULT_SEARCH_DATA = []
@@ -102,6 +103,15 @@ def get_results(search_id):
             return jsonify(search["data"])
 
     return Response(f"No search found with id {search_id}", status=404)
+
+
+@app.route("/api/system/about", methods=["GET"])
+def get_about():
+    global route_configs
+    conf = route_configs["about"]
+    if not conf["status_code"] == 200:
+        return Response("Failure!", status=conf["status_code"])
+    return ""
 
 
 if __name__ == "__main__":
