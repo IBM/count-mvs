@@ -8,15 +8,14 @@ from flask import Flask, Response, jsonify, request
 
 app = Flask(__name__)
 
-DEFAULT_ROOT_CONFIGS = {
-    "start_search": {"status_code": 200},
-    "results": {"status_code": 200},
-    "status": {"status_code": 200},
+DEFAULT_ROUTE_CONFIGS = {
+    "start_search": {"status_code": 200}, "results": {"status_code": 200}, "status": {"status_code": 200},
+    "about": {"status_code": 200}
 }
 DEFAULT_SEARCHES = []
 DEFAULT_SEARCH_DATA = []
 
-route_configs = DEFAULT_ROOT_CONFIGS.copy()
+route_configs = DEFAULT_ROUTE_CONFIGS.copy()
 searches = DEFAULT_SEARCHES.copy()
 search_data = DEFAULT_SEARCH_DATA.copy()
 
@@ -41,7 +40,7 @@ def reset():
     global route_configs
     global searches
     global search_data
-    route_configs = DEFAULT_ROOT_CONFIGS.copy()
+    route_configs = DEFAULT_ROUTE_CONFIGS.copy()
     searches = DEFAULT_SEARCHES.copy()
     search_data = DEFAULT_SEARCH_DATA.copy()
     return ""
@@ -54,7 +53,7 @@ def start_search():
     global searches
     global search_data
     conf = route_configs["start_search"]
-    if not conf["status_code"] == 200:
+    if conf["status_code"] != 200:
         return Response("Failure!", status=conf["status_code"])
 
     search_id = 0
@@ -77,7 +76,7 @@ def get_status(search_id):
     global route_configs
     global searches
     conf = route_configs["status"]
-    if not conf["status_code"] == 200:
+    if conf["status_code"] != 200:
         return Response("Failure!", status=conf["status_code"])
 
     print(searches)
@@ -94,7 +93,7 @@ def get_results(search_id):
     global route_configs
     global searches
     conf = route_configs["results"]
-    if not conf["status_code"] == 200:
+    if conf["status_code"] != 200:
         return Response("Failure!", status=conf["status_code"])
 
     for search in searches:
@@ -102,6 +101,15 @@ def get_results(search_id):
             return jsonify(search["data"])
 
     return Response(f"No search found with id {search_id}", status=404)
+
+
+@app.route("/api/system/about", methods=["GET"])
+def get_about():
+    global route_configs
+    conf = route_configs["about"]
+    if conf["status_code"] != 200:
+        return Response("Failure!", status=conf["status_code"])
+    return ""
 
 
 if __name__ == "__main__":
