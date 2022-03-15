@@ -258,7 +258,7 @@ def get_multiple_domains(db_conn, log_source):
             sys.exit(unauth_str)
         elif api_response.status_code == 403 and use_token:
             sys.exit("API call returned 403 Forbidden. \nThe token provided has incorrect permissions. " \
-                        "Please rerun the script and try again")
+                        "Please rerun the script and try again.")
         else:
             logging.error("Error: API returned code {}\n{}".format(search_response.status_code, search_response.text))
 
@@ -523,7 +523,7 @@ try:
                     sys.exit(unauth_msg)
                 elif api_response.status_code == 403 and use_token:
                     sys.exit("API call returned 403 Forbidden. \nThe token provided has incorrect permissions. " \
-                        "Please rerun the script and try again")
+                        "Please rerun the script and try again.")
                 else:
                     if api_response.text:
                         logging.debug("Error executing API call {}".format(api_response.text))
