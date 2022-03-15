@@ -20,9 +20,13 @@ class API:
         resp = requests.post(f"https://{self.host}/conf/reset")
         _handle_err(resp, 200, "Failed to reset the mock API")
 
-    def set_about(self, status_code) -> None:
+    def set_about_success(self) -> None:
         resp = requests.post(f"https://{self.host}/conf/route_configs/about", json={"status_code": status_code})
-        _handle_err(resp, 200, "Failed to set about to {status_code}")
+        _handle_err(resp, 200, "Failed to set about to success")
+
+    def set_about_failure(self, status_code) -> None:
+        resp = requests.post(f"https://{self.host}/conf/route_configs/about", json={"status_code": status_code})
+        _handle_err(resp, 200, "Failed to set about to failure")
 
     def set_start_search_failure(self, status_code) -> None:
         resp = requests.post(f"https://{self.host}/conf/route_configs/start_search", json={"status_code": status_code})
