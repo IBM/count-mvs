@@ -1,0 +1,12 @@
+{
+  "events": [
+    {
+      "logsourceid": 70,
+      "domainname_domainid": "Default Domain"
+    },
+    {
+      "logsourceid": 71,
+      "domainname_domainid": "Default Domain"
+    }
+  ]
+}

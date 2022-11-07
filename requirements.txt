@@ -1,6 +1,0 @@
-# These are development dependencies
-pylint==2.12.2
-yapf==0.32.0
-pytest==6.2.5
-pexpect==4.8.0
-Flask==2.0.2
