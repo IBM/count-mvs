@@ -85,8 +85,8 @@ def test_adding_multiple_domains():
         log_source = log_source_map[log_source_id]
         domains = log_source.get_domains()
         assert len(domains) == 2
-        assert domains[0] == 'Test Domain {}a'.format(log_source_id)
-        assert domains[1] == 'Test Domain {}b'.format(log_source_id)
+        assert 'Test Domain {}a'.format(log_source_id) in domains
+        assert 'Test Domain {}b'.format(log_source_id) in domains
 
 
 def test_exception_thrown_when_ariel_search_fails():

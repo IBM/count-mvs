@@ -161,9 +161,11 @@ class LogSource():
         return self.domains
 
     def add_domain(self, domain):
-        self.domains.append(domain)
+        if not domain in self.domains:
+            self.domains.append(domain)
 
     def set_domains(self, domains):
+        domains = list(dict.fromkeys(domains))
         self.domains = domains
 
     def get_first_domain(self):
@@ -1245,7 +1247,7 @@ class ResultsGenerator():
             domains.sort()
             csv_file.write('Domain Name, MVS Count\n')
             for domain in domains:
-                csv_file.write('{},{}'.format(domain, self.mvs_results.get_domain_count_map()[domain]))
+                csv_file.write('{},{}\n'.format(domain, self.mvs_results.get_domain_count_map()[domain]))
 
     def _write_mvs_count_summary(self, csv_file):
         csv_file.write('Results Summary:\n')

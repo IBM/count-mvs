@@ -161,9 +161,11 @@ class LogSource(object):
         return self.domains
 
     def add_domain(self, domain):
-        self.domains.append(domain)
+        if not domain in self.domains:
+            self.domains.append(domain)
 
     def set_domains(self, domains):
+        domains = list(dict.fromkeys(domains))
         self.domains = domains
 
     def get_first_domain(self):
@@ -837,7 +839,7 @@ class DomainAppender(object):
         # Retrieve results for the AQL query
         mapping = LogSourceToDomainMapping()
         range_headers = self._build_range_header()
-        while (range_headers):
+        while range_headers:
             search_results = self.aql_client.get_search_result(self.ariel_search.get_search_id(), range_headers)
             if search_results is not None:
                 for search_result in search_results:
@@ -1245,7 +1247,7 @@ class ResultsGenerator(object):
             domains.sort()
             csv_file.write('Domain Name, MVS Count\n')
             for domain in domains:
-                csv_file.write('{},{}'.format(domain, self.mvs_results.get_domain_count_map()[domain]))
+                csv_file.write('{},{}\n'.format(domain, self.mvs_results.get_domain_count_map()[domain]))
 
     def _write_mvs_count_summary(self, csv_file):
         csv_file.write('Results Summary:\n')
