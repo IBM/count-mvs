@@ -1,0 +1,23 @@
+{
+    "cursor_id": "4aa31dff-bf9b-4cf8-b9d5-01e7c1c39300",
+    "status": "COMPLETED",
+    "compressed_data_file_count": 0,
+    "compressed_data_total_size": 0,
+    "data_file_count": 0,
+    "data_total_size": 0,
+    "index_file_count": 41,
+    "index_total_size": 2132821,
+    "processed_record_count": 0,
+    "desired_retention_time_msec": 86400000,
+    "progress": 100,
+    "progress_details": [],
+    "query_execution_time": 25,
+    "query_string": "SELECT qid FROM events WHERE logsourceid IN (76) AND qid IN (5000928,5000917,5000573,5002856,5000907,5000570,5000923,5002233,5000946,5000932,5000929,5000925,5000558,5000590,5000584,5000565,5002738,5000564,5001661,5000575,5000937,5000572,5000581,5000916,5000930,5000551,5000566,5002946,5000542,5000567,5000921,5000569,5002963,5000899,5000924,5002384,5000919,5002732,5002854,5000544,5000918,5000922,5000915,5000545,5000920,5000576,5000561,5000900,5000562,5000926,5000571,5000568,5000898,5000931,5000559,5002857,5000560,5000939,5000574,5000940,5000901,5000914,5000583,5002383,5000563,5002855,5000927,5000543) LIMIT 1 LAST 1 DAYS",
+    "record_count": 0,
+    "size_on_disk": 24,
+    "save_results": false,
+    "completed": true,
+    "subsearch_ids": [],
+    "snapshot": null,
+    "search_id": "4aa31dff-bf9b-4cf8-b9d5-01e7c1c39300"
+}

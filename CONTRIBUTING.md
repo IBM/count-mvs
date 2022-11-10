@@ -42,14 +42,11 @@ commands you can use:
 * `make format` - format the code
 * `make lint` - run a linter against the code
 * `make test` - run all of the tests against the code
-* `make integration_tests` - run all of the integration tests
-* `make py3_integration_tests` - runs the integration tests in Python 3 mode
-* `make py2_integration_tests` - runs the integration tests in Python 2 mode
 * `make unit_tests` - run all of the unit tests
-* `make integration_tests INTEGRATION_TESTS=integration/test/test_single_domain.py` - run a single integration test
-(`integration/test/test_single_domain.py`), this also works for the `py3_integration_tests` and `py2_integration_tests`
-targets
-* `make unit_tests UNIT_TESTS=test/test_example.py` - run a single unit test (`test/test_example.py`)
+* `make unit_tests_py3` - run all of the Python 3 unit tests.
+* `make unit_tests_py2` - run all of the Python 2 unit tests.
+* `make unit_tests UNIT_TESTS=src/tests/test_validator.py` - run a single unit test in both Py2 and Py3
+(`test_validator.py`)
 
 These use a local Dockerfile to run these commands, this Dockerfile is set up to be as close to a QRadar environment
 as possible (running on Red Hat, using Red Hat Python packages).
