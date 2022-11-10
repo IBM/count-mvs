@@ -1,35 +1,182 @@
 # Count MVS
 
-This is a script that is meant to be ran on a Qradar Console and give a count of the MVS (Managed Virtual Servers) for
-the deployment.
+## What is the purpose of this script?
 
-To run the script you need to copy it to the Console, make it executable `chmod +x countMVS.py`, and then run the
-script with `./countMVS.py`. If your deployment is a multi-tenant environment (i.e. it receives events from multiple
-domains) then you will be prompted for authentication. You can choose between running the script as the Admin user, or
-using an Authorized Service with the Admin Security Profile. After you choose the script will prompt you for either the
-Admin user's password or the Authorized Service's security token before executing.
+This script is designed to give an MVS count for your QRadar deployment when run on your QRadar console.
 
-The script works by querying the database to compile a list of log sources that have sent events to Qradar within the
-last 24 hours. From that list of log sources we build a list of the machines those sources are running on. If there are
-any log sources that are not explicitly running on a machine we consider an MVS, for example a SaaS service, then we
-remove those log sources from the list. In this version of the script we have a list of log sources we consider as not
-running on an MVS, we plan on improving our algorithm for determining log sources are/are not running on an MVS. After
-we filter out those log sources we ensure that no machine in the list  is referenced more than once. Finally we output
-the list, a map of MVS IPs to a list of each of their log sources, to a file and return the final count of MVS the
-deployment has received events from in the last 24 hours
+## What does MVS stand for?
 
-There are additional considerations for multi-tenant environments, as the script needs to consider the case where a
-given IP could refer to multiple different machines across multiple domains, which would affect our MVS count. If the
-script detects that a log source has received events from multiple domains then it will try to compile a list of those
-domains by issuing calls to the Ariel API in order to inspect the events that were sent to that log source in the last
-24 hours. These API calls are why the script requires authentication in this case. If we find a log source has been
-receiving events from the same IP from different domains then that means the IP represents multiple machines, and this
-will be reflected in the MVS count. We include the list of domains for each log source in the csv output file. In
-addition to the MVS count for the entire deployment, in this case we will also provide a separate MVS count for each
-domain.
+MVS stands for Managed Virtual Server
 
-The script generates the `MVScount.csv` file. The header of the file is a list of the IP of each MVS, and the columns
-are the list of log sources for each MVS.
+## What counts as an MVS?
+
+MVS can be:
+
+*  A physical or virtual server that can be seen by the environment e.g. Actual servers(Windows, Linux), VMs, EC2s
+
+MVS can not be:
+
+* An endpoint (laptop)
+* A SaaS service
+
+## How do I run the script?
+
+The script is available in both Python 2 and Python 3, if you are on QRadar 7.5.0+/7.4.3 FP6+ you can use the Python 3
+script.
+
+### Python 2
+
+1. Copy the [Python 2 countMVS.py](python2/src/countMVS.py) script to your QRadar console.
+2. Make sure it has the correct permissions to execute by running this `chmod` command:
+
+```bash
+chmod +x countMVS.py
+```
+
+3. Execute the script:
+
+```
+./countMVS.py
+```
+
+### Python 3
+
+1. Copy the [Python 3 countMVS.py](python3/src/countMVS.py) script to your QRadar console.
+2. Make sure it has the correct permissions to execute by running this `chmod` command:
+
+```bash
+chmod +x countMVS.py
+```
+
+3. Execute the script:
+
+```
+./countMVS.py
+```
+
+<a name="commandlineswitches"></a>
+### Command line Switches
+
+There are a number of command line switches that can be used with the script. To see a listing of the available command
+line switches simply add `--help` or `-h`.
+
+```bash
+python ./countMVS.py --help
+usage: countMVS.py [-h] [-d] [-o <filename>] [-l <filename>]
+
+optional arguments:
+  -h, --help     show this help message and exit
+  -d, --debug    sets the log level to debug
+  -o <filename>  overrides the default output csv file
+  -l <filename>  overrides the default file to log to
+```
+
+Let's look at each switch in turn.
+
+* `-d` or `--debug` - This command line switch is used to toggle the logging level for the script. As stated in
+the [Output from the script](#outputfromscript) section the script outputs to a log file under `/var/log` called
+`countMVS.log` by default. When you execute the script it will log at **INFO** level however if you wish to add extra
+logging at **DEBUG** level you can do so by adding this switch
+* `-o <filename>` - This command line switch is used to override the default csv file name used to output the results
+from the script. By default this is mvsCount.csv however this can be overridden with this switch to a filename of the
+user's choice
+* `-l <filename>` - This command line switch is used to override the default file the script logs to. By default this
+is `/var/log/countMVS.log` however this can be overridden with this switch to a filename of the user's choice
+
+## High level requirements for the script
+
+In order to calculate an MVS count from a QRadar deployment the script must perform the following high level actions:
+
+* Search the Postgres database for any log sources that have processed events within a set time period (1 day by
+default with a max time period of 10 days for performance reasons)
+* Determine whether the QRadar deployment has a single domain or multiple domain set up. If there are multiple domains
+as some log sources do not directly map via the database to individual domains an AQL search will need to be performed
+via the REST API to determine which domain(s) a log source is associated with
+* The script should only be runnable on the console
+* The script should prompt for either the admin user password or an authorized service token with admin capabilities
+which the user must paste in
+* A check must be made on the authorized service token that it has ADMIN capabilities which are required to make the
+REST API call to execute an AQL query on QRadar
+* Appropriate error messages should be displayed to the user if passwords or tokens are incorrect or do not have the
+required capabilities to proceed
+* Perform the AQL query via the REST API to calculate the log source to domain mapping if the deployment is set up for
+multiple domains. The AQL query is not required if we only have the Default domain and all log sources can assume that
+domain rather than performing the search
+* Loop through each of the log sources and check if they log sources match a list of excluded log source types which do
+not count as MVS
+* Build a map of hostnames/IP's to log sources using either the hostname field in the database for the log source or
+use the associated sensor protocol parameters to calculate the hostname/IP
+* Remove any windows workstations from the map. This is to be calculated using the REST API again using Windows Event
+IDs to calculate the associated QIDs and then search using ariel for matches to determine if the machines are windows
+workstations or servers
+* Resolve any hostnames in the map to IP addresses so that we can compare log sources correctly as some may have
+hostnames and some may have IP addresses
+* If the setup has multiple domains a given IP could refer to multiple servers/machines. In this case if the same
+IP/hostname appears in multiple domains we count each occurance as a separate MVS i.e. if the same IP appeared in
+domain one and domain two that then counts as two MVS
+* Produce a report with the MVS count showing a list of log sources to IP/Hostnames
+* Output a listing of domains to MVS count
+
+<a name="outputfromscript"></a>
+## Output from the script
+
+The countMVS.py script produces the following as output:
+
+* A csv file (mvsCount.csv by default, this filename can be overriden by a command line switch) which contains a
+listing of:
+    * The MVS count for the deployment
+	* The Time period selected by the user for the last time seen for events from log sources to be considered in the
+    count
+	* A summary of how many log sources were processed, skipped and excluded in the count results
+	* If there are multiple domains in the deployment a summary of the counts per domain
+	* A listing of each of the MVS in the deployment
+	* A listing of log source to MVS IP/Hostname (with log source data horizontally for easier viewing by the user)
+	* A listing of any excluded log sources e.g. windows workstation log sources or excluded log sources by type, any
+    skipped log sources (this may be log sources that we failed to parse the domain for)
+* Output to the screen at the end of the execution of the script with the MVS count for the deployment along with a
+summary breakdown by domain name if the system has multiple domains
+* A log file containing information about the execution of the script (/var/log/countMVS.log by default, this filename
+can also be overriden by a command line switch). The logging to this file is set at INFO level by default but can be
+changed by adding a command line switch to DEBUG level if required
+
+Example output:
+
+```csv
+Results Summary:
+MVS Count = 2
+Data Period In Days = 5
+Log Sources Processed = 8
+Log Sources Skipped = 0
+Log Sources Excluded = 1
+
+MVS Count By Domain:
+Domain Name, MVS Count
+Default Domain,2
+
+MVS List:
+127.0.0.1
+127.0.0.2
+
+Log Source Details:
+MVS Device Id = 127.0.0.1
+ID,Name,Log Source Identifier,Type ID,Last Seen,SP Config,Domains
+72,ISA @ 127.0.0.1,127.0.0.1,191,1653311211964,0,['Default Domain']
+
+MVS Device Id = 127.0.0.2
+ID,Name,Log Source Identifier,Type ID,Last Seen,SP Config,Domains
+74,MicrosoftDHCP @ microsoft.dhcp.test.com,microsoft.dhcp.test.com,97,1653311397947,0,['Default Domain']
+73,ISA @ microsoft.isa.test.com,microsoft.isa.test.com,191,1653311243354,0,['Default Domain']
+71,MicrosoftExchange @ microsoft.exchange.test.com,microsoft.exchange.test.com,99,1653310035730,0,['Default Domain']
+70,MicrosoftIAS @ microsoft.ias.test.com,microsoft.ias.test.com,98,1653310030759,0,['Default Domain']
+75,WindowsAuthServer @ microsoft.windows.test.com,microsoft.windows.test.com,12,1653313524268,0,['Default Domain']
+77,MicrosoftSQL @ microsoft.sql.test.com,microsoft.sql.test.com,101,1653313531070,0,['Default Domain']
+
+Excluded Log Source Details:
+Windows Workstations:
+MVS Device Id = 127.0.0.1
+ID,Name,Log Source Identifier,Type ID,Last Seen,SP Config,Domains
+76,WindowsAuthServer @ 127.0.0.1,127.0.0.1,12,1653313441854,0,['Default Domain']
+```
 
 ## Contributing
 

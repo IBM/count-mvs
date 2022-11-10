@@ -1,0 +1,23 @@
+{
+  "status": "WAIT",
+  "size_on_disk": 0,
+  "record_count": 0,
+  "desired_retention_time_msec": 86400000,
+  "index_total_size": 0,
+  "completed": false,
+  "subsearch_ids": [],
+  "processed_record_count": 0,
+  "query_execution_time": 0,
+  "save_results": false,
+  "search_id": "84570b06-9c87-4f4a-990b-3bd7f0a94299",
+  "data_total_size": 0,
+  "snapshot": null,
+  "compressed_data_file_count": 0,
+  "data_file_count": 0,
+  "cursor_id": "84570b06-9c87-4f4a-990b-3bd7f0a94299",
+  "query_string": "SELECT logsourceid,DOMAINNAME(domainid) FROM events GROUP BY logsourceid,domainid ORDER BY logsourceid LAST 1 DAYS",
+  "progress": 0,
+  "progress_details": [],
+  "compressed_data_total_size": 0,
+  "index_file_count": 0
+}
