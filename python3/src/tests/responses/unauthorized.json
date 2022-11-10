@@ -1,0 +1,10 @@
+{
+    "http_response": {
+        "code": 401,
+        "message": "You are unauthorized to access the requested resource."
+    },
+    "code": 18,
+    "description": "",
+    "details": {},
+    "message": "No SEC header present in request. Please provide it via \"SEC: token\". You may also use BASIC authentication parameters if this host supports it. e.g. \"Authorization: Basic base64Encoding\""
+}
