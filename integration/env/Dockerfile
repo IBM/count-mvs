@@ -14,16 +14,16 @@ RUN ln -s /usr/bin/python3.6 /usr/local/bin/python3
 RUN ln -s /usr/bin/python2.7 /usr/local/bin/python2
 
 # Set up dev dependencies
-COPY integration/env/requirements.txt /
+COPY requirements.txt /
 RUN python3 -m pip install -r /requirements.txt --user
 
 # Set up QRadar environment
 RUN mkdir -p /var/log/ && mkdir -p /opt/qradar/conf && mkdir -p /opt/qradar/bin
-COPY integration/env/myver /opt/qradar/bin
+COPY myver /opt/qradar/bin
 RUN chmod +x /opt/qradar/bin/myver
 
 # Trust API cert
-COPY integration/api/server.cert /etc/pki/ca-trust/source/anchors/api.cert
+COPY server.cert /etc/pki/ca-trust/source/anchors/api.cert
 RUN update-ca-trust enable
 
 WORKDIR /count-mvs

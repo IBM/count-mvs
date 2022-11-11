@@ -2,20 +2,18 @@ version: "3.9"
 services:
   api:
     build:
-      context: .
-      dockerfile: ./integration/api/Dockerfile
+      context: ./integration/api
     command: python /api/api.py
   postgres:
     build:
-      context: .
-      dockerfile: ./integration/db/Dockerfile
+      context: ./integration/db
     restart: always
   py3_integration:
     build:
-      context: .
-      dockerfile: ./integration/env/Dockerfile
+      context: ./integration/env
     volumes:
-      - .:/count-mvs
+      - ./integration/test:/count-mvs/integration/test
+      - ./python3/src:/count-mvs/python3/src
       - ./log:/var/log
     depends_on:
       - "postgres"
@@ -23,10 +21,10 @@ services:
     command: python3 -m pytest --pyversion 3 ${INTEGRATION_TESTS:-integration/test/}
   py2_integration:
     build:
-      context: .
-      dockerfile: ./integration/env/Dockerfile
+      context: ./integration/env
     volumes:
-      - .:/count-mvs
+      - ./integration/test:/count-mvs/integration/test
+      - ./python2/src:/count-mvs/python2/src
       - ./log:/var/log
     depends_on:
       - "postgres"

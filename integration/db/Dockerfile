@@ -7,4 +7,4 @@ ENV POSTGRES_USER=qradar
 ENV POSTGRES_DB=qradar
 ENV POSTGRES_PASSWORD=qradar
 
-ADD ./integration/db/schema.sql /docker-entrypoint-initdb.d/
+ADD schema.sql /docker-entrypoint-initdb.d/

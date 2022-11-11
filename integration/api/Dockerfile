@@ -8,7 +8,7 @@ RUN ln -s /usr/bin/python3.6 /usr/local/bin/python
 
 RUN mkdir -p /api
 
-COPY integration/api /api/
+COPY . /api/
 
 RUN python -m pip install -r /api/requirements.txt
 

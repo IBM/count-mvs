@@ -22,7 +22,7 @@ format: docker
 		$(DEV_DOCKER_IMAGE)              \
 		make format_local
 
-test: integration_tests unit_tests
+test: unit_tests integration_tests
 
 unit_tests: docker
 	docker run                           \
