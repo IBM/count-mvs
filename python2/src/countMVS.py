@@ -119,6 +119,10 @@ class WindowsWorkstationRetrievalException(Exception):
     pass
 
 
+class MyVerException(Exception):
+    pass
+
+
 class QuitSelected(Exception):
     pass
 
@@ -395,29 +399,30 @@ class PermissionCheckResult(object):
 
 class AQLClient(object):
 
-    LOCALHOST_API = 'https://localhost/api'
-    ARIEL_API_URL = LOCALHOST_API + '/ariel'
+    API_URL = '/api'
+    ARIEL_API_URL = API_URL + '/ariel'
     ARIEL_SEARCHES_ENDPOINT = ARIEL_API_URL + '/searches'
     ARIEL_SEARCH_ENDPOINT = ARIEL_SEARCHES_ENDPOINT + '/{}'
     ARIEL_SEARCH_RESULTS_ENDPOINT = ARIEL_SEARCH_ENDPOINT + '/results'
-    SYSTEM_ABOUT_TEST_ENDPOINT = LOCALHOST_API + '/system/about'
+    SYSTEM_ABOUT_TEST_ENDPOINT = API_URL + '/system/about'
 
     def __init__(self, rest_client):
         self.rest_client = rest_client
 
     def perform_search(self, query):
         params = {'query_expression': query}
-        response_json = self.rest_client.post(url=self.ARIEL_SEARCHES_ENDPOINT, success_code=201, params=params)
+        response_json = self.rest_client.post(path=self.ARIEL_SEARCHES_ENDPOINT, success_code=201, params=params)
         search = ArielSearch.from_json(response_json)
         return search
 
     def get_search(self, search_id):
-        response_json = self.rest_client.get(url=self.ARIEL_SEARCH_ENDPOINT.format(search_id))
+        response_json = self.rest_client.get(path=self.ARIEL_SEARCH_ENDPOINT.format(search_id))
         search = ArielSearch.from_json(response_json)
         return search
 
     def get_search_result(self, search_id, headers=None):
-        response_json = self.rest_client.get(url=self.ARIEL_SEARCH_RESULTS_ENDPOINT.format(search_id), headers=headers)
+        response_json = self.rest_client.get(path=self.ARIEL_SEARCH_RESULTS_ENDPOINT.format(search_id),
+                                             headers=headers)
         if response_json and 'events' in response_json:
             return response_json['events']
         return []
@@ -429,7 +434,7 @@ class AQLClient(object):
         client_auth = self.rest_client.get_client_auth()
         permission_check_result = PermissionCheckResult(client_auth)
         try:
-            response_json = self.rest_client.get(url=self.SYSTEM_ABOUT_TEST_ENDPOINT)
+            response_json = self.rest_client.get(path=self.SYSTEM_ABOUT_TEST_ENDPOINT)
             permission_check_result.set_response_json(response_json)
         except (APIException, RESTException) as err:
             permission_check_result.set_exception(err)
@@ -440,7 +445,8 @@ class RESTClient(object):
 
     SEC_HEADER = 'SEC'
 
-    def __init__(self):
+    def __init__(self, hostname):
+        self.hostname = hostname
         self.client_auth = None
 
     def set_client_auth(self, client_auth):
@@ -449,10 +455,10 @@ class RESTClient(object):
     def get_client_auth(self):
         return self.client_auth
 
-    def get(self, url, success_code=200, headers=None):
+    def get(self, path, success_code=200, headers=None):
         try:
             rest_headers = self._build_headers(headers)
-            response = requests.get(url, headers=rest_headers, auth=self._build_auth(), verify=False)
+            response = requests.get(self._build_url(path), headers=rest_headers, auth=self._build_auth())
         except (RequestException, ValueError) as err:
             raise APIException(err)
 
@@ -464,10 +470,13 @@ class RESTClient(object):
         api_error = APIError.from_json(response.json())
         raise RESTException(api_error.get_error_message(), api_error)
 
-    def post(self, url, success_code=200, params=None, headers=None):
+    def post(self, path, success_code=200, params=None, headers=None):
         try:
             rest_headers = self._build_headers(headers)
-            response = requests.post(url, headers=rest_headers, params=params, auth=self._build_auth(), verify=False)
+            response = requests.post(self._build_url(path),
+                                     headers=rest_headers,
+                                     params=params,
+                                     auth=self._build_auth())
         except (RequestException, ValueError) as err:
             raise APIException(err)
 
@@ -490,6 +499,9 @@ class RESTClient(object):
         if self.client_auth and self.client_auth.get_username() and self.client_auth.get_password():
             return (self.client_auth.get_username(), self.client_auth.get_password())
         return None
+
+    def _build_url(self, path):
+        return "https://{}{}".format(self.hostname, path)
 
 
 class DatabaseClient(object):
@@ -1344,19 +1356,39 @@ class Validator(object):
     @staticmethod
     def is_console():
         try:
-            cmd_args = ['/opt/qradar/bin/myver', '-c']
-            cmd_result = subprocess.check_output(cmd_args)
-            if cmd_result:
-                cmd_output = cmd_result.rstrip()
-                logging.debug('is_console output is %s', cmd_output)
-                return cmd_output == 'true'
-        except (subprocess.CalledProcessError) as err:
+            is_c = MyVer.is_console()
+            logging.debug('is_console output is %s', is_c)
+            return is_c
+        except (MyVerException) as err:
             logging.error('is_console failed with the following error %s', str(err))
         return False
 
     @staticmethod
     def perform_api_permission_check(aql_client):
         return aql_client.check_api_permissions()
+
+
+class MyVer(object):
+
+    @staticmethod
+    def _query(arg):
+        try:
+            cmd_args = ['/opt/qradar/bin/myver', arg]
+            cmd_result = subprocess.check_output(cmd_args)
+            if cmd_result:
+                cmd_output = cmd_result.rstrip()
+                return cmd_output
+            return ''
+        except (subprocess.CalledProcessError) as err:
+            raise MyVerException(err)
+
+    @staticmethod
+    def get_hostname():
+        return MyVer._query('-vh')
+
+    @staticmethod
+    def is_console():
+        return MyVer._query('-c') == 'true'
 
 
 class MVSProcessor(object):
@@ -1413,8 +1445,12 @@ class MVSProcessor(object):
             auth = AuthReader.prompt_for_auth_method()
             if not auth:
                 raise QuitSelected()
+
+            logging.debug('retrieving console hostname')
+            hostname = MyVer.get_hostname()
+
             logging.debug('initializing aql client')
-            api_client = RESTClient()
+            api_client = RESTClient(hostname)
             api_client.set_client_auth(auth)
             self.aql_client = AQLClient(api_client)
 
@@ -1495,7 +1531,7 @@ class MVSProcessor(object):
             self._generate_mvs_results()
             return 0
         except (DatabaseError, DomainRetrievalException, IOError, LogSourceRetrievalException, ValidatorException,
-                WindowsWorkstationRetrievalException) as err:
+                WindowsWorkstationRetrievalException, MyVerException) as err:
             print(err)
             return 1
         except KeyboardInterrupt:

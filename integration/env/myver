@@ -1,0 +1,19 @@
+#!/bin/bash
+# This dummy script supports the call to /opt/qradar/bin/myver -c.
+# In the future it could be expanded to support more options.
+
+# myver -c defaults to outputting "true".
+# Set MVS_IS_CONSOLE to a value other than "true" to simulate running on some other host.
+if [ "$1" = "-c" ]
+then
+    echo "${MVS_IS_CONSOLE:-true}"
+    exit 0
+fi
+
+if [ "$1" = "-vh" ]
+then
+    echo "api"
+    exit 0
+fi
+
+exit 1

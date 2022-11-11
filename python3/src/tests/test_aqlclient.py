@@ -64,7 +64,7 @@ def test_perform_search():
     domain_aql_query = DomainAppender.DOMAIN_AQL_QUERY_TEMPLATE.format(1)
     ariel_search = aql_client.perform_search(domain_aql_query)
     expected_params = {QUERY_EXPRESSION_HEADER: domain_aql_query}
-    rest_client.post.assert_called_with(url=AQLClient.ARIEL_SEARCHES_ENDPOINT,
+    rest_client.post.assert_called_with(path=AQLClient.ARIEL_SEARCHES_ENDPOINT,
                                         success_code=CREATED_HTTP_CODE,
                                         params=expected_params)
     assert ariel_search.get_search_id() == ARIEL_SEARCH_ID
@@ -77,7 +77,7 @@ def test_get_search():
     rest_client = build_mock_rest_client(get_response_file=ARIEL_POST_RESPONSE_JSON_FILE)
     aql_client = AQLClient(rest_client)
     ariel_search = aql_client.get_search(ARIEL_SEARCH_ID)
-    rest_client.get.assert_called_with(url=AQLClient.ARIEL_SEARCH_ENDPOINT.format(ARIEL_SEARCH_ID))
+    rest_client.get.assert_called_with(path=AQLClient.ARIEL_SEARCH_ENDPOINT.format(ARIEL_SEARCH_ID))
     assert ariel_search.get_search_id() == ARIEL_SEARCH_ID
     assert ariel_search.is_completed() is False
     assert ariel_search.get_progress() == 0
@@ -89,7 +89,7 @@ def test_get_search_results():
     aql_client = AQLClient(rest_client)
     ariel_results = aql_client.get_search_result(ARIEL_SEARCH_ID)
     rest_client.get.assert_called_with(headers=None,
-                                       url=AQLClient.ARIEL_SEARCH_RESULTS_ENDPOINT.format(ARIEL_SEARCH_ID))
+                                       path=AQLClient.ARIEL_SEARCH_RESULTS_ENDPOINT.format(ARIEL_SEARCH_ID))
     assert len(ariel_results) == 2
     log_source_to_domain_map = build_log_source_to_domain_mapping(ariel_results)
     assert log_source_to_domain_map[LOG_SOURCE_ID_ONE][0] == DEFAULT_DOMAIN_NAME

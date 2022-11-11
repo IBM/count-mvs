@@ -47,6 +47,11 @@ commands you can use:
 * `make unit_tests_py2` - run all of the Python 2 unit tests.
 * `make unit_tests UNIT_TESTS=src/tests/test_validator.py` - run a single unit test in both Py2 and Py3
 (`test_validator.py`)
+* `make integration_tests` - run all of the integration tests
+* `make integration_tests_py3` - run all of the Python 3 integration tests.
+* `make integration_tests_py2` - run all of the Python 2 integration tests.
+* `make integration_tests INTEGRATION_TESTS=integration/test/test_five_domains.py` - run a single integration test in
+both Py2 and Py3 (`test_five_domains.py.py`)
 
 These use a local Dockerfile to run these commands, this Dockerfile is set up to be as close to a QRadar environment
 as possible (running on Red Hat, using Red Hat Python packages).

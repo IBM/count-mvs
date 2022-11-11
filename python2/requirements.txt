@@ -1,9 +1,7 @@
 mock==3.0.5
-psycopg2-binary==2.8.6
 lazy-object-proxy==1.6.0
 pylint==1.9.5
 pytest==4.6.11
 pytest-cov==2.12.1
-requests==2.27.1
-testfixtures==6.18.5
 yapf==0.32.0
+testfixtures==6.18.5
