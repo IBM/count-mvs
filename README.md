@@ -83,7 +83,7 @@ user's choice
 * `-l <filename>` - This command line switch is used to override the default file the script logs to. By default this
 is `/var/log/countMVS.log` however this can be overridden with this switch to a filename of the user's choice
 
-## High level requirements for the script
+## High level description of how the script works
 
 In order to calculate an MVS count from a QRadar deployment the script must perform the following high level actions:
 
