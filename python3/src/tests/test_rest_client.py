@@ -27,7 +27,8 @@ def test_rest_client_get_with_password():
         mock_requests_get.assert_called_with("https://test{}".format(
             AQLClient.ARIEL_SEARCH_ENDPOINT).format('84570b06-9c87-4f4a-990b-3bd7f0a94299'),
                                              headers={},
-                                             auth=('admin', 'test'))
+                                             auth=('admin', 'test'),
+                                             verify=True)
 
 
 def test_rest_client_get_with_auth_token():
@@ -50,7 +51,8 @@ def test_rest_client_get_with_auth_token():
         mock_requests_get.assert_called_with("https://test{}".format(
             AQLClient.ARIEL_SEARCH_ENDPOINT).format('84570b06-9c87-4f4a-990b-3bd7f0a94299'),
                                              headers={'SEC': 'test'},
-                                             auth=None)
+                                             auth=None,
+                                             verify=True)
 
 
 def test_rest_client_post_with_password():
@@ -74,7 +76,57 @@ def test_rest_client_post_with_password():
         mock_requests_post.assert_called_with("https://test{}".format(AQLClient.ARIEL_SEARCHES_ENDPOINT),
                                               headers={},
                                               params=query_params,
-                                              auth=('admin', 'test'))
+                                              auth=('admin', 'test'),
+                                              verify=True)
+
+
+def test_rest_client_get_with_insecure():
+    rest_client = RESTClient('test', True)
+    client_auth = Auth()
+    client_auth.set_password('test')
+    rest_client.set_client_auth(client_auth)
+    with patch("requests.get") as mock_requests_get:
+        response_mock = Mock()
+        response_mock.status_code = 200
+        response_mock.json.return_value = read_response_from_file('post_search.json')
+        mock_requests_get.return_value = response_mock
+        response_json = rest_client.get(
+            path=AQLClient.ARIEL_SEARCH_ENDPOINT.format('84570b06-9c87-4f4a-990b-3bd7f0a94299'))
+        ariel_search = ArielSearch.from_json(response_json)
+        assert ariel_search.get_search_id() == '84570b06-9c87-4f4a-990b-3bd7f0a94299'
+        assert ariel_search.is_completed() is False
+        assert ariel_search.get_progress() == 0
+        assert ariel_search.get_status() == 'WAIT'
+        mock_requests_get.assert_called_with("https://test{}".format(
+            AQLClient.ARIEL_SEARCH_ENDPOINT).format('84570b06-9c87-4f4a-990b-3bd7f0a94299'),
+                                             headers={},
+                                             auth=('admin', 'test'),
+                                             verify=False)
+
+
+def test_rest_client_post_insecure():
+    rest_client = RESTClient('test', True)
+    client_auth = Auth()
+    client_auth.set_password('test')
+    rest_client.set_client_auth(client_auth)
+    with patch("requests.post") as mock_requests_post:
+        response_mock = Mock()
+        response_mock.status_code = 200
+        response_mock.json.return_value = read_response_from_file('post_search.json')
+        mock_requests_post.return_value = response_mock
+        domain_aql_query = DomainAppender.DOMAIN_AQL_QUERY_TEMPLATE.format(1)
+        query_params = {'query_expression', domain_aql_query}
+        response_json = rest_client.post(path=AQLClient.ARIEL_SEARCHES_ENDPOINT, params=query_params)
+        ariel_search = ArielSearch.from_json(response_json)
+        assert ariel_search.get_search_id() == '84570b06-9c87-4f4a-990b-3bd7f0a94299'
+        assert ariel_search.is_completed() is False
+        assert ariel_search.get_progress() == 0
+        assert ariel_search.get_status() == 'WAIT'
+        mock_requests_post.assert_called_with("https://test{}".format(AQLClient.ARIEL_SEARCHES_ENDPOINT),
+                                              headers={},
+                                              params=query_params,
+                                              auth=('admin', 'test'),
+                                              verify=False)
 
 
 def test_rest_client_post_non_success_response_code():

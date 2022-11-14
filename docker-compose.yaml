@@ -4,6 +4,10 @@ services:
     build:
       context: ./integration/api
     command: python /api/api.py
+    networks:
+      default:
+        aliases:
+          - nocert
   postgres:
     build:
       context: ./integration/db

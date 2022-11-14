@@ -445,9 +445,10 @@ class RESTClient(object):
 
     SEC_HEADER = 'SEC'
 
-    def __init__(self, hostname):
+    def __init__(self, hostname, insecure=False):
         self.hostname = hostname
         self.client_auth = None
+        self.verify = not insecure
 
     def set_client_auth(self, client_auth):
         self.client_auth = client_auth
@@ -458,7 +459,10 @@ class RESTClient(object):
     def get(self, path, success_code=200, headers=None):
         try:
             rest_headers = self._build_headers(headers)
-            response = requests.get(self._build_url(path), headers=rest_headers, auth=self._build_auth())
+            response = requests.get(self._build_url(path),
+                                    headers=rest_headers,
+                                    auth=self._build_auth(),
+                                    verify=self.verify)
         except (RequestException, ValueError) as err:
             raise APIException(err)
 
@@ -476,7 +480,8 @@ class RESTClient(object):
             response = requests.post(self._build_url(path),
                                      headers=rest_headers,
                                      params=params,
-                                     auth=self._build_auth())
+                                     auth=self._build_auth(),
+                                     verify=self.verify)
         except (RequestException, ValueError) as err:
             raise APIException(err)
 
@@ -1440,7 +1445,7 @@ class MVSProcessor(object):
                               'Reason[%s]', err)
                 raise DatabaseError('Unable to connect to database')
 
-    def _init_aql_client(self):
+    def _init_aql_client(self, insecure):
         if not self.aql_client:
             auth = AuthReader.prompt_for_auth_method()
             if not auth:
@@ -1450,7 +1455,7 @@ class MVSProcessor(object):
             hostname = MyVer.get_hostname()
 
             logging.debug('initializing aql client')
-            api_client = RESTClient(hostname)
+            api_client = RESTClient(hostname, insecure)
             api_client.set_client_auth(auth)
             self.aql_client = AQLClient(api_client)
 
@@ -1458,6 +1463,10 @@ class MVSProcessor(object):
     def _parse_arguments():
         parser = argparse.ArgumentParser()
         parser.add_argument('-d', '--debug', help='sets the log level to debug', action='store_true')
+        parser.add_argument('-i',
+                            '--insecure',
+                            help='skips certificate verification for HTTP requests',
+                            action='store_true')
         parser.add_argument('-o', metavar='<filename>', help='overrides the default output csv file')
         parser.add_argument('-l', metavar='<filename>', help='overrides the default file to log to')
         return vars(parser.parse_args())
@@ -1509,9 +1518,12 @@ class MVSProcessor(object):
         self._append_domains(log_source_map)
         return log_source_map.values()
 
-    def _generate_mvs_results(self):
+    def _generate_mvs_results(self, args):
+        insecure = False
+        if args and 'insecure' in args and args['insecure']:
+            insecure = True
         self._store_period_in_days()
-        self._init_aql_client()
+        self._init_aql_client(insecure)
         permission_check_result = Validator.perform_api_permission_check(self.aql_client)
         if not permission_check_result.is_successful():
             raise ValidatorException(permission_check_result.get_error_message())
@@ -1528,7 +1540,7 @@ class MVSProcessor(object):
             self._init_logging(args)
             if not Validator.is_console():
                 raise ValidatorException('This script can only be ran on the console. Exiting...')
-            self._generate_mvs_results()
+            self._generate_mvs_results(args)
             return 0
         except (DatabaseError, DomainRetrievalException, IOError, LogSourceRetrievalException, ValidatorException,
                 WindowsWorkstationRetrievalException, MyVerException) as err:
