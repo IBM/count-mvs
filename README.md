@@ -62,13 +62,14 @@ line switches simply add `--help` or `-h`.
 
 ```bash
 python ./countMVS.py --help
-usage: countMVS.py [-h] [-d] [-o <filename>] [-l <filename>]
+usage: countMVS.py [-h] [-d] [-i] [-o <filename>] [-l <filename>]
 
 optional arguments:
-  -h, --help     show this help message and exit
-  -d, --debug    sets the log level to debug
-  -o <filename>  overrides the default output csv file
-  -l <filename>  overrides the default file to log to
+  -h, --help      show this help message and exit
+  -d, --debug     sets the log level to debug
+  -i, --insecure  skips certificate verification for HTTP requests
+  -o <filename>   overrides the default output csv file
+  -l <filename>   overrides the default file to log to
 ```
 
 Let's look at each switch in turn.
@@ -77,13 +78,16 @@ Let's look at each switch in turn.
 the [Output from the script](#outputfromscript) section the script outputs to a log file under `/var/log` called
 `countMVS.log` by default. When you execute the script it will log at **INFO** level however if you wish to add extra
 logging at **DEBUG** level you can do so by adding this switch
+* `-i` or `--insecure` - This command line switch is used to skip certificate verification for API calls made to the
+QRadar API by the script. By default all API calls use certificate verification, but this can be skipped by providing
+this flag if the certificates on your QRadar system have expired or are broken.
 * `-o <filename>` - This command line switch is used to override the default csv file name used to output the results
 from the script. By default this is mvsCount.csv however this can be overridden with this switch to a filename of the
 user's choice
 * `-l <filename>` - This command line switch is used to override the default file the script logs to. By default this
 is `/var/log/countMVS.log` however this can be overridden with this switch to a filename of the user's choice
 
-## High level requirements for the script
+## High level description of how the script works
 
 In order to calculate an MVS count from a QRadar deployment the script must perform the following high level actions:
 

@@ -1,0 +1,36 @@
+version: "3.9"
+services:
+  api:
+    build:
+      context: ./integration/api
+    command: python /api/api.py
+    networks:
+      default:
+        aliases:
+          - nocert
+  postgres:
+    build:
+      context: ./integration/db
+    restart: always
+  py3_integration:
+    build:
+      context: ./integration/env
+    volumes:
+      - ./integration/test:/count-mvs/integration/test
+      - ./python3/src:/count-mvs/python3/src
+      - ./log:/var/log
+    depends_on:
+      - "postgres"
+      - "api"
+    command: python3 -m pytest --pyversion 3 ${INTEGRATION_TESTS:-integration/test/}
+  py2_integration:
+    build:
+      context: ./integration/env
+    volumes:
+      - ./integration/test:/count-mvs/integration/test
+      - ./python2/src:/count-mvs/python2/src
+      - ./log:/var/log
+    depends_on:
+      - "postgres"
+      - "api"
+    command: python3 -m pytest --pyversion 2 ${INTEGRATION_TESTS:-integration/test/}
