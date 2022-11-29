@@ -81,7 +81,7 @@ format_local_py3:
 unit_tests_local: unit_tests_local_py2 unit_tests_local_py3
 
 unit_tests_local_py2:
-	python2 -m pytest --cov-report xml:python2/coverage.xml --cov-report term --cov=countMVS python2/$(UNIT_TESTS)
+	cd python2 && python2 -m pytest --cov-report xml:coverage.xml --cov-report term --cov=countMVS $(UNIT_TESTS)
 
 unit_tests_local_py3:
-	python3 -m pytest --cov-report xml:python3/coverage.xml --cov-report term --cov=countMVS python3/$(UNIT_TESTS)
+	cd python3 && python3 -m pytest --cov-report xml:coverage.xml --cov-report term --cov=countMVS $(UNIT_TESTS)
