@@ -20,7 +20,7 @@ jobs:
       - name: Run tests
         run: make test
       - name: Python 2 SonarCloud
-        if: github.event_name != 'release' && github.repository == 'IBM/qpylib'
+        if: github.event_name != 'release'
         uses: sonarsource/sonarcloud-github-action@master
         with:
           projectBaseDir: python2
@@ -28,7 +28,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_PY2 }}
       - name: Python 3 SonarCloud
-        if: github.event_name != 'release' && github.repository == 'IBM/qpylib'
+        if: github.event_name != 'release'
         uses: sonarsource/sonarcloud-github-action@master
         with:
           projectBaseDir: python3
