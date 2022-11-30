@@ -61,7 +61,8 @@ def setup():
 
 
 def test_insecure_with_invalid_cert_full_flag(setup, pyversion):
-    process = pexpect.spawn(f'/bin/bash -c "MVS_INVALID_CERT=true python{pyversion} python{pyversion}/src/countMVS.py -i"')
+    process = pexpect.spawn(
+        f'/bin/bash -c "MVS_INVALID_CERT=true python{pyversion} python{pyversion}/src/countMVS.py -i"')
 
     # Give period in days
     process.expect(": ", timeout=7)
@@ -92,8 +93,10 @@ def test_insecure_with_invalid_cert_full_flag(setup, pyversion):
     assert return_code == 0
     assert output[len(output) - 1] == "MVS count for the deployment is 1"
 
+
 def test_insecure_with_invalid_cert_short_flag(setup, pyversion):
-    process = pexpect.spawn(f'/bin/bash -c "MVS_INVALID_CERT=true python{pyversion} python{pyversion}/src/countMVS.py -i"')
+    process = pexpect.spawn(
+        f'/bin/bash -c "MVS_INVALID_CERT=true python{pyversion} python{pyversion}/src/countMVS.py -i"')
 
     # Give period in days
     process.expect(": ", timeout=7)

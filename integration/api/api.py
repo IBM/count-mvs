@@ -54,7 +54,10 @@ def start_search():
     global search_data
     conf = route_configs["start_search"]
     if conf["status_code"] != 201:
-        return Response("Failure!", status=conf["status_code"])
+        if conf["result"] is None:
+            return Response("Failure!", status=conf["status_code"])
+        else:
+            return Response(conf["result"], status=conf["status_code"])
 
     search_id = 0
     for search in searches:
@@ -83,7 +86,8 @@ def get_status(search_id):
 
     for search in searches:
         if search["id"] == search_id:
-            return jsonify({"search_id": search_id, "record_count": 5, "completed": True, "progress": 100, "status": "COMPLETED"})
+            return jsonify(
+                {"search_id": search_id, "record_count": 5, "completed": True, "progress": 100, "status": "COMPLETED"})
 
     return Response(f"No search found with id {search_id}", status=404)
 

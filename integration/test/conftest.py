@@ -17,7 +17,7 @@ def wait_until_db_ready():
     while not db_ready and retries < POSTGRES_RETRIES:
         retries += 1
         try:
-            conn = psycopg2.connect("dbname='qradar' user='qradar'")
+            conn = psycopg2.connect("dbname='qradar' user='integration'")
             cur = conn.cursor()
 
             cur.execute("select count(id) from ready_for_testing;")
