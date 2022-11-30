@@ -1,7 +1,9 @@
 .python-version
 .project
 .pydevproject
+.coverage
 *.pyc
 mvsCount.csv
 log/
 __pycache__/
+coverage.xml
