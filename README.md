@@ -1,3 +1,7 @@
+[![Build Status](https://github.com/ibm/count-mvs/workflows/build/badge.svg)](https://github.com/ibm/count-mvs/actions)
+[![Python 3 Security Rating](https://sonarcloud.io/api/project_badges/measure?project=count-mvs-py3&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=count-mvs-py3)
+[![Python 2 Security Rating](https://sonarcloud.io/api/project_badges/measure?project=count-mvs-py2&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=count-mvs-py2)
+
 # Count MVS
 
 ## What is the purpose of this script?
