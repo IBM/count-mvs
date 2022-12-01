@@ -9,7 +9,7 @@ import psycopg2
 class Database:
 
     def __init__(self) -> None:
-        self.conn = psycopg2.connect("dbname='qradar' user='qradar'")
+        self.conn = psycopg2.connect("dbname='qradar' user='integration'")
         self.cur = None
 
     def cursor(self) -> None:
@@ -59,9 +59,28 @@ class Database:
                 (sensor_protocol_config_parameter["id"], sensor_protocol_config_parameter["sensorprotocolconfigid"],
                  sensor_protocol_config_parameter["name"], sensor_protocol_config_parameter["value"]))
 
+    def create_qidmaps(self, qidmap_configs) -> None:
+        for qidmap_config in qidmap_configs:
+            self.cur.execute("INSERT INTO public.qidmap(id, qid) VALUES(%s, %s);",
+                             (qidmap_config["id"], qidmap_config["qid"]))
+
+    def create_dsm_events(self, dsm_event_configs) -> None:
+        for dsm_event_config in dsm_event_configs:
+            self.cur.execute(
+                "INSERT INTO public.dsmevent(id, qidmapid, devicetypeid, deviceeventid) VALUES(%s, %s, %s, %s);",
+                (dsm_event_config["id"], dsm_event_config["qidmapid"], dsm_event_config["devicetypeid"],
+                 dsm_event_config["deviceeventid"]))
+
     def reset(self) -> None:
+        self.cur.execute("DROP ROLE IF EXISTS qradar;")
+        self.cur.execute("CREATE ROLE qradar WITH LOGIN SUPERUSER PASSWORD 'qradar';")
         self.cur.execute("DELETE FROM public.sensorprotocolconfigparameters;")
         self.cur.execute("DELETE FROM public.sensorprotocolconfig;")
         self.cur.execute("DELETE FROM public.domain_mapping;")
         self.cur.execute("DELETE FROM public.sensordevice;")
         self.cur.execute("DELETE FROM public.domains;")
+        self.cur.execute("DELETE FROM public.dsmevent;")
+        self.cur.execute("DELETE FROM public.qidmap;")
+
+    def drop_qradar_user(self) -> None:
+        self.cur.execute("DROP ROLE IF EXISTS qradar;")

@@ -15,6 +15,7 @@ import sys
 import socket
 from socket import gaierror
 import subprocess
+from json import JSONDecodeError
 import six
 import requests
 from requests.exceptions import RequestException
@@ -322,6 +323,10 @@ class APIError():
             return APIError(**response_json)
         return APIError()
 
+    @staticmethod
+    def from_response_status_and_text(response_status, response_text):
+        return APIError({'code': response_status}, response_text)
+
 
 class APIErrorGenerator():
 
@@ -471,7 +476,10 @@ class RESTClient():
         if response.status_code == success_code:
             return response.json()
 
-        api_error = APIError.from_json(response.json())
+        try:
+            api_error = APIError.from_json(response.json())
+        except JSONDecodeError:
+            api_error = APIError.from_response_status_and_text(response.status_code, response.text)
         raise RESTException(api_error.get_error_message(), api_error)
 
     def post(self, path, success_code=200, params=None, headers=None):
@@ -490,7 +498,10 @@ class RESTClient():
         if response.status_code == success_code:
             return response.json()
 
-        api_error = APIError.from_json(response.json())
+        try:
+            api_error = APIError.from_json(response.json())
+        except JSONDecodeError:
+            api_error = APIError.from_response_status_and_text(response.status_code, response.text)
         raise RESTException(api_error.get_error_message(), api_error)
 
     def _build_headers(self, headers):
