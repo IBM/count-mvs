@@ -1,6 +1,8 @@
 -- Copyright 2022 IBM Corporation All Rights Reserved.
 -- SPDX-License-Identifier: Apache-2.0
 
+CREATE ROLE qradar WITH LOGIN SUPERUSER PASSWORD 'qradar';
+
 CREATE TABLE public.domains (
     id integer NOT NULL,
     name character varying(1024),
@@ -8,7 +10,7 @@ CREATE TABLE public.domains (
     PRIMARY KEY (id)
 );
 
-ALTER TABLE public.domains OWNER TO qradar;
+ALTER TABLE public.domains OWNER TO integration;
 
 CREATE TABLE public.sensordevice (
     id integer NOT NULL,
@@ -20,7 +22,7 @@ CREATE TABLE public.sensordevice (
     PRIMARY KEY (id)
 );
 
-ALTER TABLE public.sensordevice OWNER TO qradar;
+ALTER TABLE public.sensordevice OWNER TO integration;
 
 CREATE TABLE public.domain_mapping (
     id integer NOT NULL,
@@ -31,7 +33,7 @@ CREATE TABLE public.domain_mapping (
     FOREIGN KEY (domain_id) REFERENCES public.domains(id)
 );
 
-ALTER TABLE public.domain_mapping OWNER TO qradar;
+ALTER TABLE public.domain_mapping OWNER TO integration;
 
 CREATE TABLE public.sensorprotocolconfig (
     id bigint NOT NULL,
@@ -39,7 +41,7 @@ CREATE TABLE public.sensorprotocolconfig (
     PRIMARY KEY (id)
 );
 
-ALTER TABLE public.sensorprotocolconfig OWNER TO qradar;
+ALTER TABLE public.sensorprotocolconfig OWNER TO integration;
 
 CREATE TABLE public.sensorprotocolconfigparameters (
     id bigint NOT NULL,
@@ -50,7 +52,26 @@ CREATE TABLE public.sensorprotocolconfigparameters (
     FOREIGN KEY (sensorprotocolconfigid) REFERENCES sensorprotocolconfig(id)
 );
 
-ALTER TABLE public.sensorprotocolconfigparameters OWNER TO qradar;
+ALTER TABLE public.sensorprotocolconfigparameters OWNER TO integration;
+
+CREATE TABLE public.qidmap (
+    id bigint NOT NULL,
+    qid integer,
+    PRIMARY KEY (id)
+);
+
+ALTER TABLE public.qidmap OWNER TO integration;
+
+CREATE TABLE public.dsmevent (
+    id bigint NOT NULL,
+    qidmapid bigint,
+    devicetypeid integer,
+    deviceeventid integer,
+    PRIMARY KEY (id),
+    FOREIGN KEY (qidmapid) REFERENCES qidmap(id)
+);
+
+ALTER TABLE public.dsmevent OWNER TO integration;
 
 -- This must be the last thing inserted, this allows the integration script to know when it's safe to run
 CREATE TABLE ready_for_testing (

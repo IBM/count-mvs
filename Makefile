@@ -77,6 +77,7 @@ format_local_py2:
 
 format_local_py3:
 	python3 -m yapf -i -p --style python3/.style.yapf -r python3/src/
+	python3 -m yapf -i -p --style python3/.style.yapf -r integration/
 
 unit_tests_local: unit_tests_local_py2 unit_tests_local_py3
 

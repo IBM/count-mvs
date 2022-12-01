@@ -7,49 +7,27 @@ SPDX-License-Identifier: Apache-2.0
 import pytest
 import pexpect
 from util.db import Database
+from util.api import API
 from util.log import print_count_mvs_log
-
-domains = [
-    {"id": 0, "name": "test", "deleted": False},
-]
-
-sensor_devices = [
-    {"id": 0, "hostname": "localhost", "devicename": "test", "devicetypeid": 0, "spconfig": 0},
-]
-
-domain_mappings = [
-    {"id": 0, "domain_id": 0, "source_type": 2, "source_id": 0},
-]
-
-sensor_protocol_configs = [
-    {"id": 0, "spid": 0},
-]
-
-sensor_protocol_config_parameters = [
-    {"id": 0, "sensorprotocolconfigid": 0, "name": "server", "value": "localhost"},
-]
+import json
 
 
 def do_setup():
+    api = API()
+    api.set_about_failure(
+        401,
+        json.dumps({
+            "http_response": {"code": 401, "message": "You are unauthorized to access the requested resource."},
+            "code": 18, "description": "", "details": {},
+            "message": "No SEC header present in request. Please provide it via \"SEC: token\". You may also use BASIC authentication parameters if this host supports it. e.g. \"Authorization: Basic base64Encoding\""
+        }))
     database = Database()
-
-    # Set up test data
-    database.cursor()
-    database.create_domains(domains)
-    database.create_sensor_devices(sensor_devices)
-    database.create_domain_mappings(domain_mappings)
-    database.create_sensor_protocol_configs(sensor_protocol_configs)
-    database.create_sensor_protocol_config_parameters(sensor_protocol_config_parameters)
-    database.commit()
-    database.close()
 
 
 def do_teardown():
-    database = Database()
-    database.cursor()
-    database.reset()
-    database.commit()
-    database.close()
+    api = API()
+    api.reset()
+
     print_count_mvs_log()
 
 
@@ -60,7 +38,7 @@ def setup():
     do_teardown()
 
 
-def test_single_domain_user_password(setup, pyversion):
+def test_user_password(setup, pyversion):
     process = pexpect.spawn(f"python{pyversion} python{pyversion}/src/countMVS.py")
 
     # Give period in days
@@ -89,11 +67,12 @@ def test_single_domain_user_password(setup, pyversion):
     # Print stdout/stderr here for debugging in case the test fails
     print(output)
 
-    assert return_code == 0
-    assert output[len(output) - 1] == "MVS count for the deployment is 1"
+    assert return_code == 1
+    assert output[len(output) -
+                  1] == "You have provided an incorrect password. Please re-run the script and try again."
 
 
-def test_single_domain_authorized_service(setup, pyversion):
+def test_authorized_service(setup, pyversion):
     process = pexpect.spawn(f"python{pyversion} python{pyversion}/src/countMVS.py")
 
     # Give period in days
@@ -122,5 +101,5 @@ def test_single_domain_authorized_service(setup, pyversion):
     # Print stdout/stderr here for debugging in case the test fails
     print(output)
 
-    assert return_code == 0
-    assert output[len(output) - 1] == "MVS count for the deployment is 1"
+    assert return_code == 1
+    assert output[len(output) - 1] == "You have provided an incorrect token. Please re-run the script and try again."

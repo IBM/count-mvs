@@ -24,28 +24,40 @@ class API:
         resp = requests.post(f"https://{self.host}/conf/route_configs/about", json={"status_code": 200})
         _handle_err(resp, 200, "Failed to set about to success")
 
-    def set_about_failure(self, status_code) -> None:
-        resp = requests.post(f"https://{self.host}/conf/route_configs/about", json={"status_code": status_code})
+    def set_about_failure(self, status_code, result=None) -> None:
+        conf = {"status_code": status_code}
+        if result is not None:
+            conf["result"] = result
+        resp = requests.post(f"https://{self.host}/conf/route_configs/about", json=conf)
         _handle_err(resp, 200, "Failed to set about to failure")
 
-    def set_start_search_failure(self, status_code) -> None:
-        resp = requests.post(f"https://{self.host}/conf/route_configs/start_search", json={"status_code": status_code})
+    def set_start_search_failure(self, status_code, result=None) -> None:
+        conf = {"status_code": status_code}
+        if result is not None:
+            conf["result"] = result
+        resp = requests.post(f"https://{self.host}/conf/route_configs/start_search", json=conf)
         _handle_err(resp, 200, "Failed to set start search to failure")
 
     def set_start_search_success(self) -> None:
         resp = requests.post(f"https://{self.host}/conf/route_configs/start_search", json={"status_code": 200})
         _handle_err(resp, 200, "Failed to set start search to success")
 
-    def set_search_results_failure(self, status_code) -> None:
-        resp = requests.post(f"https://{self.host}/conf/route_configs/results", json={"status_code": status_code})
+    def set_search_results_failure(self, status_code, result=None) -> None:
+        conf = {"status_code": status_code}
+        if result is not None:
+            conf["result"] = result
+        resp = requests.post(f"https://{self.host}/conf/route_configs/results", json=conf)
         _handle_err(resp, 200, "Failed to set get search results to failure")
 
     def set_search_results_success(self) -> None:
         resp = requests.post(f"https://{self.host}/conf/route_configs/results", json={"status_code": 200})
         _handle_err(resp, 200, "Failed to set get search results to success")
 
-    def set_search_status_failure(self, status_code) -> None:
-        resp = requests.post(f"https://{self.host}/conf/route_configs/status", json={"status_code": status_code})
+    def set_search_status_failure(self, status_code, result=None) -> None:
+        conf = {"status_code": status_code}
+        if result is not None:
+            conf["result"] = result
+        resp = requests.post(f"https://{self.host}/conf/route_configs/status", json=conf)
         _handle_err(resp, 200, "Failed to set get search status to failure")
 
     def set_search_status_success(self) -> None:

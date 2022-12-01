@@ -38,18 +38,14 @@ sensor_protocol_config_parameters = [
     {"id": 0, "sensorprotocolconfigid": 0, "name": "server", "value": "localhost"},
 ]
 
-search_data = [{
-    "events": [{"logsourceid": 0, "domainname_domainid": "test1"}, {"logsourceid": 1, "domainname_domainid": "test2"},
-               {"logsourceid": 2, "domainname_domainid": "test3"}, {"logsourceid": 3, "domainname_domainid": "test4"},
-               {"logsourceid": 4, "domainname_domainid": "test5"}]
-}]
-
 
 def do_setup():
     api = API()
-    api.add_search_data(search_data)
+
+    api.set_search_results_failure(500)
 
     database = Database()
+
     # Set up test data
     database.cursor()
     database.create_domains(domains)
@@ -63,7 +59,6 @@ def do_setup():
 def do_teardown():
     api = API()
     api.reset()
-
     database = Database()
     database.cursor()
     database.reset()
@@ -79,7 +74,7 @@ def setup():
     do_teardown()
 
 
-def test_five_domains(setup, pyversion):
+def test_fail_http_start_search(setup, pyversion):
     process = pexpect.spawn(f"python{pyversion} python{pyversion}/src/countMVS.py")
 
     # Give period in days
@@ -107,5 +102,5 @@ def test_five_domains(setup, pyversion):
     # Print stdout/stderr here for debugging in case the test fails
     print(output[len(output) - 6])
 
-    assert return_code == 0
-    assert output[len(output) - 6] == "MVS count for the deployment is 5"
+    assert return_code == 1
+    assert output[len(output) - 1] == "Unable to retrieve domain information. ERROR None"

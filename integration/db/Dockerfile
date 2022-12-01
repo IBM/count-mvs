@@ -3,7 +3,7 @@
 
 FROM postgres:11.14
 
-ENV POSTGRES_USER=qradar
+ENV POSTGRES_USER=integration
 ENV POSTGRES_DB=qradar
 ENV POSTGRES_PASSWORD=qradar
 
