@@ -20,10 +20,10 @@ domains = [
 
 sensor_devices = [
     {"id": 0, "hostname": "localhost", "devicename": "test1", "devicetypeid": 0, "spconfig": 0},
-    {"id": 1, "hostname": "qradar", "devicename": "test2", "devicetypeid": 0, "spconfig": 1},
-    {"id": 2, "hostname": "ibm.com", "devicename": "test3", "devicetypeid": 0, "spconfig": 2},
-    {"id": 3, "hostname": "example.com", "devicename": "test4", "devicetypeid": 0, "spconfig": 3},
-    {"id": 4, "hostname": "test.com", "devicename": "test5", "devicetypeid": 0, "spconfig": 4},
+    {"id": 1, "hostname": "localhost", "devicename": "test2", "devicetypeid": 0, "spconfig": 1},
+    {"id": 2, "hostname": "localhost", "devicename": "test3", "devicetypeid": 0, "spconfig": 2},
+    {"id": 3, "hostname": "localhost", "devicename": "test4", "devicetypeid": 0, "spconfig": 3},
+    {"id": 4, "hostname": "localhost", "devicename": "test5", "devicetypeid": 0, "spconfig": 4},
 ]
 
 sensor_protocol_configs = [
@@ -47,9 +47,11 @@ search_data = [{
 
 def do_setup():
     api = API()
+
     api.add_search_data(search_data)
 
     database = Database()
+
     # Set up test data
     database.cursor()
     database.create_domains(domains)
@@ -79,7 +81,7 @@ def setup():
     do_teardown()
 
 
-def test_five_domains(setup, pyversion):
+def test_same_host_multiple_domains(setup, pyversion):
     process = pexpect.spawn(f"python{pyversion} python{pyversion}/src/countMVS.py")
 
     # Give period in days
