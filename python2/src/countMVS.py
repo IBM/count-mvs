@@ -1148,8 +1148,9 @@ class LogSourceProcessor(object):
         logging.info('Attempting to resolve hostnames to ips')
         for machine_identifier, log_sources in self.mvs_results.get_device_map().items():
             logging.info('Attempting to resolve machine identifier %s to an ip address', machine_identifier)
-            device_ip = IPParser.get_device_ip(machine_identifier)
-            if not device_ip:
+            try:
+                device_ip = IPParser.get_device_ip(machine_identifier)
+            except:
                 logging.info('Unable to resolve machine identifier %s to an ip address', machine_identifier)
                 continue
             if device_ip != machine_identifier:
@@ -1288,7 +1289,7 @@ class ResultsGenerator(object):
         csv_file.write('MVS List:\n')
         index = 0
         for machine_identifier in self.mvs_results.get_device_map().keys():
-            csv_file.write(machine_identifier)
+            csv_file.write(str(machine_identifier))
             if index < len(self.mvs_results.get_device_map().keys()) - 1:
                 self.add_carriage_return(csv_file)
             index += 1

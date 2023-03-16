@@ -1149,8 +1149,9 @@ class LogSourceProcessor():
         logging.info('Attempting to resolve hostnames to ips')
         for machine_identifier, log_sources in list(self.mvs_results.get_device_map().items()):
             logging.info('Attempting to resolve machine identifier %s to an ip address', machine_identifier)
-            device_ip = IPParser.get_device_ip(machine_identifier)
-            if not device_ip:
+            try:
+                device_ip = IPParser.get_device_ip(machine_identifier)
+            except:
                 logging.info('Unable to resolve machine identifier %s to an ip address', machine_identifier)
                 continue
             if device_ip != machine_identifier:
