@@ -1153,7 +1153,7 @@ class LogSourceProcessor():
                 device_ip = IPParser.get_device_ip(machine_identifier)
             except Exception as err:
                 logging.info('Unable to resolve machine identifier %s to an ip address. Error %s', machine_identifier, 
-                            str(err))
+                             str(err))
                 continue
             if device_ip != machine_identifier and device_ip is not None:
                 logging.info('Resolved machine identifier %s to ip address %s', machine_identifier, device_ip)
