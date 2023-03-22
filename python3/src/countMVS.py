@@ -1151,8 +1151,8 @@ class LogSourceProcessor():
             logging.info('Attempting to resolve machine identifier %s to an ip address', machine_identifier)
             try:
                 device_ip = IPParser.get_device_ip(machine_identifier)
-            except:
-                logging.info('Unable to resolve machine identifier %s to an ip address', machine_identifier)
+            except Exception as err:
+                logging.info('Unable to resolve machine identifier %s to an ip address', machine_identifier, str(err))
                 continue
             if device_ip != machine_identifier:
                 logging.info('Resolved machine identifer %s to ip address %s', machine_identifier, device_ip)
