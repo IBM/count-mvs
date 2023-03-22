@@ -1153,9 +1153,9 @@ class LogSourceProcessor():
             try:
                 device_ip = IPParser.get_device_ip(machine_identifier)
             except Exception as err:
-                logging.info('Unable to resolve machine identifier %s to an ip address', machine_identifier, str(err))
+                logging.info('%s Unable to resolve machine identifier %s to an ip address', str(err), machine_identifier)
                 continue
-            if device_ip != machine_identifier:
+            if device_ip != machine_identifier and device_ip is not None:
                 logging.info('Resolved machine identifer %s to ip address %s', machine_identifier, device_ip)
                 self._consolidate_device_map(device_ip, machine_identifier, log_sources)
         self._update_device_map()
