@@ -1145,6 +1145,7 @@ class LogSourceProcessor():
         for machine_identifier in self.removals:
             del self.mvs_results.get_device_map()[machine_identifier]
 
+    # pylint: disable=too-many-arguments
     def _resolve_hostnames_to_ips(self):
         logging.info('Attempting to resolve hostnames to ips')
         for machine_identifier, log_sources in list(self.mvs_results.get_device_map().items()):
