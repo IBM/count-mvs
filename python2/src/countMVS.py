@@ -1148,12 +1148,14 @@ class LogSourceProcessor(object):
         logging.info('Attempting to resolve hostnames to ips')
         for machine_identifier, log_sources in self.mvs_results.get_device_map().items():
             logging.info('Attempting to resolve machine identifier %s to an ip address', machine_identifier)
-            device_ip = IPParser.get_device_ip(machine_identifier)
-            if not device_ip:
-                logging.info('Unable to resolve machine identifier %s to an ip address', machine_identifier)
+            try:
+                device_ip = IPParser.get_device_ip(machine_identifier)
+            except Exception as err:
+                logging.info('Unable to resolve machine identifier %s to an ip address. Error %s', machine_identifier,
+                             str(err))
                 continue
-            if device_ip != machine_identifier:
-                logging.info('Resolved machine identifer %s to ip address %s', machine_identifier, device_ip)
+            if device_ip and device_ip != machine_identifier:
+                logging.info('Resolved machine identifier %s to ip address %s', machine_identifier, device_ip)
                 self._consolidate_device_map(device_ip, machine_identifier, log_sources)
         self._update_device_map()
 
