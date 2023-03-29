@@ -1155,7 +1155,7 @@ class LogSourceProcessor():
                 logging.info('Unable to resolve machine identifier %s to an ip address. Error %sß', machine_identifier,
                              str(err))
                 continue
-            if device_ip is not None and device_ip != machine_identifier:
+            if device_ip and device_ip != machine_identifier:
                 logging.info('Resolved machine identifier %s to ip address %s', machine_identifier, device_ip)
                 self._consolidate_device_map(device_ip, machine_identifier, log_sources)
         self._update_device_map()
