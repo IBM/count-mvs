@@ -14,6 +14,15 @@ lint: docker
 		$(DEV_DOCKER_IMAGE)              \
 		make lint_local
 
+gencert: docker
+        docker run                           \
+                --rm                             \
+                -v $(shell pwd):$(DEV_DIRECTORY) \
+                -w $(DEV_DIRECTORY)              \
+                $(DEV_DOCKER_IMAGE)              \
+                make gen_cert
+
+
 format: docker
 	docker run                           \
 		--rm                             \
@@ -69,6 +78,10 @@ lint_local_py2:
 
 lint_local_py3:
 	python3 -m pylint -r n --rcfile=python3/.pylintrc python3/src/*.py
+
+gen_cert:
+	cd integration/api && openssl req -config server.conf -new -nodes -x509 -newkey rsa:4096 -sha256 -keyout server.key -out server.cert -days 3650
+	cp integration/api/server.cert integration/env
 
 format_local: format_local_py2 format_local_py3
 

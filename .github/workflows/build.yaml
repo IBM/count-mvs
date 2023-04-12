@@ -13,6 +13,8 @@ jobs:
         uses: actions/checkout@v1
       - name: Build dev Docker image
         run: make docker
+      - name: Generate API certificate
+        run: make gencert
       - name: Format code, fail if there are any differences after beautifying
         run: make format && git diff --exit-code
       - name: Run pylint against code
