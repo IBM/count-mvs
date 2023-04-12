@@ -1,3 +1,5 @@
+wrapt==1.12.1
+astroid==1.6
 mock==3.0.5
 lazy-object-proxy==1.6.0
 pylint==1.9.5

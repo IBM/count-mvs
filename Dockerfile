@@ -5,7 +5,7 @@
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.6-994
 
 # Set up Python + RPM dependencies
-RUN microdnf install python2 python2-psycopg2 python2-requests python3 python3-devel python3-psycopg2 python3-requests make git gcc -y
+RUN microdnf install openssl python2 python2-psycopg2 python2-requests python3 python3-devel python3-psycopg2 python3-requests make git gcc -y
 RUN ln -s /usr/bin/python3.6 /usr/local/bin/python
 RUN ln -s /usr/bin/python3.6 /usr/local/bin/python3
 RUN ln -s /usr/bin/python2.7 /usr/local/bin/python2
