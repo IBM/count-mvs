@@ -15,13 +15,12 @@ lint: docker
 		make lint_local
 
 gencert: docker
-        docker run                           \
-                --rm                             \
-                -v $(shell pwd):$(DEV_DIRECTORY) \
-                -w $(DEV_DIRECTORY)              \
-                $(DEV_DOCKER_IMAGE)              \
-                make gen_cert
-
+	docker run                           \
+		--rm                             \
+		-v $(shell pwd):$(DEV_DIRECTORY) \
+		-w $(DEV_DIRECTORY)              \
+		$(DEV_DOCKER_IMAGE)              \
+		make gen_cert
 
 format: docker
 	docker run                           \
