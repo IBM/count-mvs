@@ -83,6 +83,7 @@ WINDOWS_SERVER_EVENT_IDS = [
 
 
 class RESTException(Exception):
+
     def __init__(self, message, api_error=None):
         self.message = message
         self.api_error = api_error
@@ -265,6 +266,7 @@ class LogSource():
 
 
 class LogSourceToDomainMapping():
+
     def __init__(self):
         self.logsource_to_domain = {}
 
@@ -335,6 +337,7 @@ class ArielSearch():
 
 
 class APIError():
+
     def __init__(self, http_response=None, message=None):
         self.http_response = http_response
         self.detailed_error_message = message
@@ -431,6 +434,7 @@ class APIErrorGenerator():
 
 
 class PermissionCheckResult():
+
     def __init__(self, client_auth):
         self.client_auth = client_auth
         self.exception = None
@@ -601,6 +605,7 @@ class DatabaseClient():
 
 
 class MachineIdentifierParser():
+
     @staticmethod
     def parse_machine_identifier(machine_id):
         # If value is a url we need to retrieve the hostname/IP to use as identifier
@@ -735,6 +740,7 @@ class DatabaseService():
 
 
 class Auth():
+
     def __init__(self):
         self.username = 'admin'
         self.password = None
@@ -778,6 +784,7 @@ class TextFormatter():
 
 
 class TimePeriodReader():
+
     @staticmethod
     def _print_description_header(default_period_in_days):
         formatter = TextFormatter()
@@ -820,6 +827,7 @@ class TimePeriodReader():
 
 
 class AuthReader():
+
     @staticmethod
     def prompt_for_auth_method():
         client_auth = Auth()
@@ -844,6 +852,7 @@ class AuthReader():
 
 
 class ProgressUtils():
+
     @staticmethod
     def _resolve_invalid_progress_range(progress):
         if progress is None or progress < 0:
@@ -888,7 +897,8 @@ class DomainAppender():
             log_source.add_domain(self.DEFAULT_DOMAIN)
 
     def _perform_aql_query(self):
-        print('\nPerforming AQL query to retrieve log source domain information, ' 'Please wait...')
+        print('\nPerforming AQL query to retrieve log source domain information, '
+              'Please wait...')
         domain_aql_query = self.DOMAIN_AQL_QUERY_TEMPLATE.format(self.period_in_days)
         logging.debug('Attempting to execute AQL query %s', domain_aql_query)
         return self.aql_client.perform_search(domain_aql_query)
@@ -1073,6 +1083,7 @@ class WindowsDeviceProcessor():
 
 
 class IPParser():
+
     @staticmethod
     def get_device_ip(hostname):
         try:
@@ -1084,6 +1095,7 @@ class IPParser():
 
 
 class MVSResults():
+
     def __init__(self):
         self.device_map = {}
         self.domain_count_map = {}
@@ -1143,6 +1155,7 @@ class MVSResults():
 
 
 class LogSourceProcessor():
+
     def __init__(self, db_service, aql_client, multi_domain=False):
         self.db_service = db_service
         self.aql_client = aql_client
@@ -1416,6 +1429,7 @@ class ResultsGenerator():
 
 
 class Validator():
+
     @staticmethod
     def is_console():
         try:
@@ -1432,6 +1446,7 @@ class Validator():
 
 
 class MyVer():
+
     @staticmethod
     def _query(arg):
         try:

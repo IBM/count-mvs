@@ -7,6 +7,7 @@ import psycopg2
 
 
 class Database:
+
     def __init__(self) -> None:
         self.conn = psycopg2.connect("dbname='qradar' user='integration'")
         self.cur = None
