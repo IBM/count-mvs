@@ -66,18 +66,21 @@ line switches simply add `--help` or `-h`.
 
 ```bash
 python ./countMVS.py --help
-usage: countMVS.py [-h] [-d] [-i] [-o <filename>] [-l <filename>]
+usage: countMVS.py [-h] [-d] [-i] [-w] [-o <filename>] [-l <filename>]
 
 optional arguments:
-  -h, --help      show this help message and exit
-  -d, --debug     sets the log level to debug
-  -i, --insecure  skips certificate verification for HTTP requests
-  -o <filename>   overrides the default output csv file
-  -l <filename>   overrides the default file to log to
+  -h, --help            show this help message and exit
+  -d, --debug           sets the log level to debug
+  -i, --insecure        skips certificate verification for HTTP requests
+  -w, --skip-workstation-check
+                        skip windows workstation check
+  -o <filename>         overrides the default output csv file
+  -l <filename>         overrides the default file to log to
 ```
 
 Let's look at each switch in turn.
 
+* `-h` or `--help` - Displays the usage message displayed above with all of the command line switches that can be used with the script
 * `-d` or `--debug` - This command line switch is used to toggle the logging level for the script. As stated in
 the [Output from the script](#outputfromscript) section the script outputs to a log file under `/var/log` called
 `countMVS.log` by default. When you execute the script it will log at **INFO** level however if you wish to add extra
@@ -85,6 +88,7 @@ logging at **DEBUG** level you can do so by adding this switch
 * `-i` or `--insecure` - This command line switch is used to skip certificate verification for API calls made to the
 QRadar API by the script. By default all API calls use certificate verification, but this can be skipped by providing
 this flag if the certificates on your QRadar system have expired or are broken.
+* `-w` or `--skip-workstation-check` - This can be used to skip the check for windows workstations. Windows workstations do not count as MVS and by default will be removed from the MVS count however the process for determining this is time consuming. If you wish to skip this check use this command line switch. **Note**: You will have to remove any windows workstations manually from the MVS count result
 * `-o <filename>` - This command line switch is used to override the default csv file name used to output the results
 from the script. By default this is mvsCount.csv however this can be overridden with this switch to a filename of the
 user's choice
@@ -114,7 +118,7 @@ domain rather than performing the search
 not count as MVS
 * Build a map of hostnames/IP's to log sources using either the hostname field in the database for the log source or
 use the associated sensor protocol parameters to calculate the hostname/IP
-* Remove any windows workstations from the map. This is to be calculated using the REST API again using Windows Event
+* If the skip workstation check switch has not been passed to the script it removes any windows workstations from the map. This is to be calculated using the REST API again using Windows Event
 IDs to calculate the associated QIDs and then search using ariel for matches to determine if the machines are windows
 workstations or servers
 * Resolve any hostnames in the map to IP addresses so that we can compare log sources correctly as some may have
@@ -132,9 +136,9 @@ The countMVS.py script produces the following as output:
 
 * A csv file (mvsCount.csv by default, this filename can be overriden by a command line switch) which contains a
 listing of:
-    * The MVS count for the deployment
-	* The Time period selected by the user for the last time seen for events from log sources to be considered in the
-    count
+   * The MVS count for the deployment
+	* The Time period selected by the user for the last time seen for events from log sources to be considered in the count
+	* If the windows workstation check was skipped or not. If it has been skipped windows workstations will need to be manually removed from the results to calculate the MVS count
 	* A summary of how many log sources were processed, skipped and excluded in the count results
 	* If there are multiple domains in the deployment a summary of the counts per domain
 	* A listing of each of the MVS in the deployment
@@ -153,6 +157,7 @@ Example output:
 Results Summary:
 MVS Count = 2
 Data Period In Days = 5
+Windows Workstation Check Skipped = False
 Log Sources Processed = 8
 Log Sources Skipped = 0
 Log Sources Excluded = 1

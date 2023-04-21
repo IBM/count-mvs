@@ -12,7 +12,6 @@ def _handle_err(resp, status_code, msg) -> None:
 
 
 class API:
-
     def __init__(self) -> None:
         self.host = "api"
 

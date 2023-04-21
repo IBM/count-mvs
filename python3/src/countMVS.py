@@ -83,7 +83,6 @@ WINDOWS_SERVER_EVENT_IDS = [
 
 
 class RESTException(Exception):
-
     def __init__(self, message, api_error=None):
         self.message = message
         self.api_error = api_error
@@ -126,6 +125,61 @@ class MyVerException(Exception):
 
 class QuitSelected(Exception):
     pass
+
+
+class CommandLineParser():
+
+    DEFAULT_LOG_FILE = '/var/log/countMVS.log'
+    DEFAULT_CSV_OUTPUT_FILE = 'mvsCount.csv'
+
+    def __init__(self):
+        self.csv_file = self.DEFAULT_CSV_OUTPUT_FILE
+        self.log_file = self.DEFAULT_LOG_FILE
+        self.debug = False
+        self.skip_windows_check = False
+        self.insecure = False
+
+    def parse_args(self, args):
+        self._parse_csv_file(args)
+        self._parse_log_file(args)
+        self._parse_debug(args)
+        self._parse_skip_windows_check(args)
+        self._parse_insecure(args)
+
+    def _parse_csv_file(self, args):
+        if args and 'o' in args and args['o']:
+            self.csv_file = args['o']
+
+    def _parse_log_file(self, args):
+        if args and 'l' in args and args['l']:
+            self.log_file = args['l']
+
+    def _parse_debug(self, args):
+        if args and 'debug' in args:
+            self.debug = args['debug']
+
+    def _parse_skip_windows_check(self, args):
+        if args and 'skip_workstation_check' in args:
+            self.skip_windows_check = args['skip_workstation_check']
+
+    def _parse_insecure(self, args):
+        if args and 'insecure' in args:
+            self.insecure = args['insecure']
+
+    def get_csv_file(self):
+        return self.csv_file
+
+    def get_log_file(self):
+        return self.log_file
+
+    def is_debug_enabled(self):
+        return self.debug
+
+    def is_insecure(self):
+        return self.insecure
+
+    def is_skip_windows_check(self):
+        return self.skip_windows_check
 
 
 class LogSource():
@@ -211,7 +265,6 @@ class LogSource():
 
 
 class LogSourceToDomainMapping():
-
     def __init__(self):
         self.logsource_to_domain = {}
 
@@ -282,7 +335,6 @@ class ArielSearch():
 
 
 class APIError():
-
     def __init__(self, http_response=None, message=None):
         self.http_response = http_response
         self.detailed_error_message = message
@@ -379,7 +431,6 @@ class APIErrorGenerator():
 
 
 class PermissionCheckResult():
-
     def __init__(self, client_auth):
         self.client_auth = client_auth
         self.exception = None
@@ -550,7 +601,6 @@ class DatabaseClient():
 
 
 class MachineIdentifierParser():
-
     @staticmethod
     def parse_machine_identifier(machine_id):
         # If value is a url we need to retrieve the hostname/IP to use as identifier
@@ -569,15 +619,11 @@ class DatabaseService():
     LOG_SOURCE_RETRIEVAL_QUERY = ('SELECT id, hostname, devicename, devicetypeid, spconfig, timestamp_last_seen '
                                   'FROM sensordevice '
                                   'WHERE timestamp_last_seen > {} and spconfig is not null')
-    SENSOR_PROTOCOL_ID_QUERY = ('SELECT spid '
-                                'FROM sensorprotocolconfig '
-                                'WHERE id = {}')
+    SENSOR_PROTOCOL_ID_QUERY = ('SELECT spid FROM sensorprotocolconfig WHERE id = {}')
     CONFIG_PARAM_VALUE_QUERY = ('SELECT value '
                                 'FROM sensorprotocolconfigparameters '
                                 'WHERE sensorprotocolconfigid = {} and name = \'{}\'')
-    DOMAIN_COUNT_QUERY = ('SELECT COUNT(id) '
-                          'FROM domains '
-                          'WHERE deleted=false')
+    DOMAIN_COUNT_QUERY = ('SELECT COUNT(id) FROM domains WHERE deleted=false')
     WINDOWS_SERVER_QIDS_QUERY = ('SELECT qid '
                                  'FROM qidmap '
                                  'WHERE id IN (SELECT qidmapid '
@@ -689,7 +735,6 @@ class DatabaseService():
 
 
 class Auth():
-
     def __init__(self):
         self.username = 'admin'
         self.password = None
@@ -733,7 +778,6 @@ class TextFormatter():
 
 
 class TimePeriodReader():
-
     @staticmethod
     def _print_description_header(default_period_in_days):
         formatter = TextFormatter()
@@ -776,7 +820,6 @@ class TimePeriodReader():
 
 
 class AuthReader():
-
     @staticmethod
     def prompt_for_auth_method():
         client_auth = Auth()
@@ -801,7 +844,6 @@ class AuthReader():
 
 
 class ProgressUtils():
-
     @staticmethod
     def _resolve_invalid_progress_range(progress):
         if progress is None or progress < 0:
@@ -846,8 +888,7 @@ class DomainAppender():
             log_source.add_domain(self.DEFAULT_DOMAIN)
 
     def _perform_aql_query(self):
-        print('\nPerforming AQL query to retrieve log source domain information, '
-              'Please wait...')
+        print('\nPerforming AQL query to retrieve log source domain information, ' 'Please wait...')
         domain_aql_query = self.DOMAIN_AQL_QUERY_TEMPLATE.format(self.period_in_days)
         logging.debug('Attempting to execute AQL query %s', domain_aql_query)
         return self.aql_client.perform_search(domain_aql_query)
@@ -1032,7 +1073,6 @@ class WindowsDeviceProcessor():
 
 
 class IPParser():
-
     @staticmethod
     def get_device_ip(hostname):
         try:
@@ -1044,7 +1084,6 @@ class IPParser():
 
 
 class MVSResults():
-
     def __init__(self):
         self.device_map = {}
         self.domain_count_map = {}
@@ -1104,7 +1143,6 @@ class MVSResults():
 
 
 class LogSourceProcessor():
-
     def __init__(self, db_service, aql_client, multi_domain=False):
         self.db_service = db_service
         self.aql_client = aql_client
@@ -1235,12 +1273,17 @@ class LogSourceProcessor():
             self.mvs_results.add_windows_workstation(windows_workstation, log_sources)
             del self.mvs_results.get_device_map()[windows_workstation]
 
-    def process_log_sources(self, log_sources, period_in_days=1):
+    def process_log_sources(self, log_sources, period_in_days=1, skip_windows_check=False):
         self.mvs_results.set_log_source_count(len(log_sources))
         for log_source in log_sources:
             self._process_log_source(log_source)
         self._resolve_hostnames_to_ips()
-        self._remove_windows_workstations(period_in_days)
+        if skip_windows_check:
+            print('Skipping windows workstation checks, windows workstations will be included in the final MVS count')
+            logging.info(
+                'Skipping windows workstation checks, windows workstations will be included in the final MVS count')
+        else:
+            self._remove_windows_workstations(period_in_days)
         if self.multi_domain:
             self._process_domain_devices()
         else:
@@ -1257,9 +1300,10 @@ class ResultsGenerator():
     ]
     LOG_SOURCE_COLUMN_NAMES = ['ID', 'Name', 'Log Source Identifier', 'Type ID', 'Last Seen', 'SP Config', 'Domains']
 
-    def __init__(self, mvs_results, period_in_days):
+    def __init__(self, mvs_results, period_in_days, skip_windows_check):
         self.mvs_results = mvs_results
         self.period_in_days = period_in_days
+        self.skip_windows_check = skip_windows_check
 
     @staticmethod
     def add_blank_row(csv_file):
@@ -1283,6 +1327,7 @@ class ResultsGenerator():
         csv_file.write('Results Summary:\n')
         csv_file.write('MVS Count = {}\n'.format(self.mvs_results.get_mvs_count()))
         csv_file.write('Data Period In Days = {}\n'.format(self.period_in_days))
+        csv_file.write('Windows Workstation Check Skipped = {}\n'.format(self.skip_windows_check))
         csv_file.write('Log Sources Processed = {}\n'.format(self.mvs_results.get_log_source_count()))
         csv_file.write('Log Sources Skipped = {}\n'.format(len(self.mvs_results.get_skipped_log_sources())))
         csv_file.write('Log Sources Excluded = {}'.format(self.mvs_results.get_excluded_log_source_count()))
@@ -1371,7 +1416,6 @@ class ResultsGenerator():
 
 
 class Validator():
-
     @staticmethod
     def is_console():
         try:
@@ -1388,7 +1432,6 @@ class Validator():
 
 
 class MyVer():
-
     @staticmethod
     def _query(arg):
         try:
@@ -1412,8 +1455,6 @@ class MyVer():
 
 class MVSProcessor():
 
-    DEFAULT_LOG_FILE = '/var/log/countMVS.log'
-    DEFAULT_CSV_OUTPUT_FILE = 'mvsCount.csv'
     DEFAULT_QRADAR_DB_NAME = 'qradar'
     DEFAULT_QRADAR_DB_USER = 'qradar'
     DEFAULT_PERIOD_IN_DAYS = 1
@@ -1421,28 +1462,21 @@ class MVSProcessor():
     DAY_IN_MILLISECONDS = 86400000
 
     def __init__(self, db_service=None, aql_client=None):
-        self.log_file = self.DEFAULT_LOG_FILE
-        self.csv_file = self.DEFAULT_CSV_OUTPUT_FILE
+        self.command_line_parser = CommandLineParser()
         self.db_service = db_service
         self.aql_client = aql_client
         self.db_client = None
         self.multi_domain = False
         self.period_in_days = self.DEFAULT_PERIOD_IN_DAYS
 
-    def _init_log_files(self, args):
-        if args and 'o' in args and args['o']:
-            self.csv_file = args['o']
-        if args and 'l' in args and args['l']:
-            self.log_file = args['l']
-
-    def _init_logging(self, args):
-        if args and 'debug' in args and args['debug']:
+    def _init_logging(self):
+        if self.command_line_parser.is_debug_enabled():
             log_level = logging.DEBUG
         else:
             log_level = logging.INFO
         logging.basicConfig(level=log_level,
                             format='%(asctime)s %(levelname)s %(message)s',
-                            filename=self.log_file,
+                            filename=self.command_line_parser.get_log_file(),
                             filemode='w')
 
     def _init_db_service(self):
@@ -1473,17 +1507,20 @@ class MVSProcessor():
             api_client.set_client_auth(auth)
             self.aql_client = AQLClient(api_client)
 
-    @staticmethod
-    def _parse_arguments():
+    def _parse_arguments(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('-d', '--debug', help='sets the log level to debug', action='store_true')
         parser.add_argument('-i',
                             '--insecure',
                             help='skips certificate verification for HTTP requests',
                             action='store_true')
+        parser.add_argument('-w',
+                            '--skip-workstation-check',
+                            help='skip windows workstation check',
+                            action='store_true')
         parser.add_argument('-o', metavar='<filename>', help='overrides the default output csv file')
         parser.add_argument('-l', metavar='<filename>', help='overrides the default file to log to')
-        return vars(parser.parse_args())
+        self.command_line_parser.parse_args(vars(parser.parse_args()))
 
     def _get_domain_appender(self):
         if self.multi_domain:
@@ -1496,13 +1533,15 @@ class MVSProcessor():
             domain_appender.add_domains(log_source_map)
 
     def _process_log_sources(self, log_sources):
+        skip_windows_check = self.command_line_parser.is_skip_windows_check()
         log_source_processor = LogSourceProcessor(self.db_service, self.aql_client, self.multi_domain)
-        log_source_processor.process_log_sources(log_sources, self.period_in_days)
+        log_source_processor.process_log_sources(log_sources, self.period_in_days, skip_windows_check)
         return log_source_processor
 
     def _output_results(self, mvs_results):
-        results_generator = ResultsGenerator(mvs_results, self.period_in_days)
-        results_generator.write_results_to_csv(self.csv_file)
+        skip_windows_check = self.command_line_parser.is_skip_windows_check()
+        results_generator = ResultsGenerator(mvs_results, self.period_in_days, skip_windows_check)
+        results_generator.write_results_to_csv(self.command_line_parser.get_csv_file())
         results_generator.output_results()
 
     def _close_db_connection(self):
@@ -1521,6 +1560,20 @@ class MVSProcessor():
         logging.info('Count of domains is %d', domain_count)
         logging.info('Multi-Domain system is %s', self.multi_domain)
 
+    def _display_skip_workstation_check_notice(self):
+        if self.command_line_parser.is_skip_windows_check():
+            print('\n')
+            print('#################################################################'
+                  '#################################################################')
+            print('#                                                                '
+                  '                                                                #')
+            print('# WARNING! The skip windows workstations check has been provided '
+                  '- windows workstations will be included in the final MVS count. #')
+            print('#                                                                '
+                  '                                                                #')
+            print('#################################################################'
+                  '#################################################################')
+
     def _store_period_in_days(self):
         time_period_reader = TimePeriodReader()
         self.period_in_days = time_period_reader.prompt_for_time_period(self.DEFAULT_PERIOD_IN_DAYS,
@@ -1532,13 +1585,10 @@ class MVSProcessor():
         self._append_domains(log_source_map)
         return list(log_source_map.values())
 
-    def _generate_mvs_results(self, args):
-        insecure = False
-        if args and 'insecure' in args and args['insecure']:
-            insecure = True
-
+    def _generate_mvs_results(self):
+        self._display_skip_workstation_check_notice()
         self._store_period_in_days()
-        self._init_aql_client(insecure)
+        self._init_aql_client(self.command_line_parser.is_insecure())
         permission_check_result = Validator.perform_api_permission_check(self.aql_client)
         if not permission_check_result.is_successful():
             raise ValidatorException(permission_check_result.get_error_message())
@@ -1550,12 +1600,11 @@ class MVSProcessor():
 
     def run(self):
         try:
-            args = self._parse_arguments()
-            self._init_log_files(args)
-            self._init_logging(args)
+            self._parse_arguments()
+            self._init_logging()
             if not Validator.is_console():
                 raise ValidatorException('This script can only be ran on the console. Exiting...')
-            self._generate_mvs_results(args)
+            self._generate_mvs_results()
             return 0
         except (DatabaseError, DomainRetrievalException, IOError, LogSourceRetrievalException, ValidatorException,
                 WindowsWorkstationRetrievalException, MyVerException) as err:
