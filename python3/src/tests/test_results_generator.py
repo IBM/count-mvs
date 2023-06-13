@@ -77,7 +77,7 @@ def test_write_results_to_csv():
     mvs_results.set_device_map(build_mock_device_map())
     with patch("csv.writer") as mock_csv_writer, patch("builtins.open", mocked_open_function) as mock_with_open:
         mock_csv_writer.return_value = string_csv_writer
-        results_generator = ResultsGenerator(mvs_results, 1)
+        results_generator = ResultsGenerator(mvs_results, 1, False)
         results_generator.write_results_to_csv('test.csv')
         mock_with_open.assert_called_with('test.csv', 'w', encoding='utf8')
         print((output.getvalue()))
@@ -87,5 +87,5 @@ def test_output_results():
     mvs_results = MVSResults()
     mvs_results.set_mvs_count(5)
     mvs_results.set_domain_count_map(build_mock_domain_count_map())
-    results_generator = ResultsGenerator(mvs_results, 1)
+    results_generator = ResultsGenerator(mvs_results, 1, False)
     results_generator.output_results()

@@ -135,3 +135,36 @@ def test_mixed_windows_servers_workstations(setup, pyversion):
 
     assert return_code == 0
     assert output[len(output) - 1] == "MVS count for the deployment is 4"
+
+
+def test_skipping_windows_workstation_check(setup, pyversion):
+    process = pexpect.spawn(f"python{pyversion} python{pyversion}/src/countMVS.py -w")
+
+    # Give period in days
+    process.expect(": ", timeout=7)
+    process.sendline("1")
+
+    # Give choose admin user
+    process.expect(": ", timeout=7)
+    process.sendline("1")
+
+    # Give password
+    process.expect(": ", timeout=7)
+    process.sendline("test_password")
+
+    process.expect(pexpect.EOF, timeout=30)
+
+    output = process.before.decode("utf-8").split("\n")
+
+    process.close()
+
+    # Remove empty strings from output
+    output = [x.strip() for x in output if x]
+
+    return_code = process.exitstatus
+
+    # Print stdout/stderr here for debugging in case the test fails
+    print(output)
+
+    assert return_code == 0
+    assert output[len(output) - 1] == "MVS count for the deployment is 6"
